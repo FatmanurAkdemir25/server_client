@@ -26,8 +26,8 @@ public class ServerGUI extends JFrame {
         setLayout(new BorderLayout(10, 10));
         
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton clientTab = new JButton("🔒 İstemci (Şifreleme)");
-        JButton serverTab = new JButton("🔓 Sunucu (Deşifreleme)");
+        JButton clientTab = new JButton("İstemci (Şifreleme)");
+        JButton serverTab = new JButton("Sunucu (Deşifreleme)");
         clientTab.setBackground(Color.WHITE);
         serverTab.setBackground(new Color(76, 175, 80));
         serverTab.setForeground(Color.WHITE);
@@ -74,7 +74,7 @@ public class ServerGUI extends JFrame {
         mainPanel.add(methodCombo);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        JLabel keyLabel = new JLabel("🔑 Anahtar (Kaydırma Sayısı)");
+        JLabel keyLabel = new JLabel("Anahtar (Kaydırma Sayısı)");
         keyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(keyLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));

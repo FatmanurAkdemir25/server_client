@@ -68,13 +68,18 @@ public class ServerGUI extends JFrame {
             "Vigenere Cipher",
             "Substitution Cipher",
             "Affine Cipher",
-            "Rail Fence Cipher"
+            "Rail Fence Cipher",
+            "Route Cipher",
+            "Columnar Transposition",
+            "Polybius Square Cipher",
+            "Pigpen Cipher",
+            "Hill Cipher"
         });
         methodCombo.setMaximumSize(new Dimension(800, 40));
         mainPanel.add(methodCombo);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        JLabel keyLabel = new JLabel("Anahtar (Kaydırma Sayısı)");
+        JLabel keyLabel = new JLabel("Anahtar");
         keyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(keyLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -134,8 +139,21 @@ public class ServerGUI extends JFrame {
         String key = keyField.getText().trim();
         String encrypted = encryptedTextArea.getText().trim();
         
-        if (key.isEmpty() || encrypted.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Lütfen tüm alanları doldurun!", 
+        if (method.startsWith("Polybius") && key.isEmpty()) {
+            key = "";
+        }
+        if (method.startsWith("Pigpen") && key.isEmpty()) {
+            key = "default";
+        }
+        
+        if (encrypted.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Lütfen şifreli mesaj alanını doldurun!", 
+                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        if (!method.startsWith("Polybius") && !method.startsWith("Pigpen") && key.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Lütfen anahtar alanını doldurun!", 
                 "Uyarı", JOptionPane.WARNING_MESSAGE);
             return;
         }

@@ -25,6 +25,7 @@ public class ClientGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
         
+        
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton clientTab = new JButton("İstemci (Şifreleme)");
         JButton serverTab = new JButton("Sunucu (Deşifreleme)");
@@ -48,15 +49,18 @@ public class ClientGUI extends JFrame {
         topPanel.add(serverTab);
         add(topPanel, BorderLayout.NORTH);
         
+        
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
         
         JLabel titleLabel = new JLabel("İstemci - Mesaj Şifreleme");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(new Color(33, 150, 243));
         mainPanel.add(titleLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
         
         JLabel methodLabel = new JLabel("Şifreleme Yöntemi");
         methodLabel.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -68,14 +72,20 @@ public class ClientGUI extends JFrame {
             "Vigenere Cipher",
             "Substitution Cipher",
             "Affine Cipher",
-            "Rail Fence Cipher"
+            "Rail Fence Cipher",
+            "Route Cipher",
+            "Columnar Transposition",
+            "Polybius Square Cipher",
+            "Pigpen Cipher",
+            "Hill Cipher"
         });
         methodCombo.setMaximumSize(new Dimension(800, 40));
         methodCombo.addActionListener(e -> updateKeyFieldHint());
         mainPanel.add(methodCombo);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        JLabel keyLabel = new JLabel("Anahtar (Kaydırma Sayısı)");
+        
+        JLabel keyLabel = new JLabel("Anahtar");
         keyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(keyLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -85,6 +95,7 @@ public class ClientGUI extends JFrame {
         keyField.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(keyField);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        
         
         JLabel messageLabel = new JLabel("Mesaj");
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -100,6 +111,7 @@ public class ClientGUI extends JFrame {
         mainPanel.add(msgScrollPane);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
+        
         encryptButton = new JButton("Şifrele");
         encryptButton.setBackground(new Color(33, 150, 243));
         encryptButton.setForeground(Color.WHITE);
@@ -108,6 +120,7 @@ public class ClientGUI extends JFrame {
         encryptButton.addActionListener(e -> performEncryption());
         mainPanel.add(encryptButton);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
         
         JLabel resultLabel = new JLabel("Şifrelenmiş Mesaj:");
         resultLabel.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -138,9 +151,19 @@ public class ClientGUI extends JFrame {
         } else if (method.startsWith("Substitution")) {
             keyField.setToolTipText("Örnek: QWERTYUIOPASDFGHJKLZXCVBNM (26 harf)");
         } else if (method.startsWith("Affine")) {
-            keyField.setToolTipText("Örnek: 5,8 (a,b formatında - a ile 26 aralarında asal olmalı)");
+            keyField.setToolTipText("Örnek: 5,8 (a,b formatında)");
         } else if (method.startsWith("Rail Fence")) {
-            keyField.setToolTipText("Örnek: 3 (ray sayısı - 2 veya daha fazla)");
+            keyField.setToolTipText("Örnek: 3 (ray sayısı)");
+        } else if (method.startsWith("Route")) {
+            keyField.setToolTipText("Örnek: 5,clockwise veya 5,counterclockwise (sütun,yön)");
+        } else if (method.startsWith("Columnar")) {
+            keyField.setToolTipText("Örnek: KEY (sıralama anahtarı)");
+        } else if (method.startsWith("Polybius")) {
+            keyField.setToolTipText("Örnek: ANAHTAR (tablo için anahtar kelime - boş bırakabilirsiniz)");
+        } else if (method.startsWith("Pigpen")) {
+            keyField.setToolTipText("Anahtar gerekmez (default yazın)");
+        } else if (method.startsWith("Hill")) {
+            keyField.setToolTipText("Örnek: 3,3,2,5 (2x2 matris: a,b,c,d)");
         }
     }
     
@@ -149,8 +172,24 @@ public class ClientGUI extends JFrame {
         String key = keyField.getText().trim();
         String message = messageArea.getText().trim();
         
-        if (key.isEmpty() || message.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Lütfen tüm alanları doldurun!", 
+        
+        if (method.startsWith("Polybius") && key.isEmpty()) {
+            key = "";
+        }
+        if (method.startsWith("Pigpen") && key.isEmpty()) {
+            key = "default";
+        }
+        
+        
+        if (message.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Lütfen mesaj alanını doldurun!", 
+                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        
+        if (!method.startsWith("Polybius") && !method.startsWith("Pigpen") && key.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Lütfen anahtar alanını doldurun!", 
                 "Uyarı", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -158,6 +197,7 @@ public class ClientGUI extends JFrame {
         try {
             String encrypted = encryptionEngine.encrypt(method, key, message);
             resultArea.setText(encrypted);
+            
             
             client.sendToServer(method, key, encrypted);
             

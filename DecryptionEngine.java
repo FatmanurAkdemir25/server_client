@@ -2,6 +2,9 @@ import java.util.*;
 
 public class DecryptionEngine {
     
+    private DESAlgorithm des = new DESAlgorithm();
+    private AESAlgorithm aes = new AESAlgorithm();
+    
     public String decrypt(String method, String key, String encryptedText) throws Exception {
         if (method.startsWith("Caesar")) {
             return caesarDecrypt(encryptedText, Integer.parseInt(key));
@@ -30,6 +33,16 @@ public class DecryptionEngine {
             int[][] keyMatrix = {{Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim())},
                                  {Integer.parseInt(parts[2].trim()), Integer.parseInt(parts[3].trim())}};
             return hillDecrypt(encryptedText, keyMatrix);
+        } else if (method.startsWith("DES")) {
+            if (key.length() != 8) {
+                throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı!");
+            }
+            return des.decrypt(encryptedText, key);
+        } else if (method.startsWith("AES")) {
+            if (key.length() != 16) {
+                throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı!");
+            }
+            return aes.decrypt(encryptedText, key);
         }
         throw new IllegalArgumentException("Geçersiz deşifreleme yöntemi!");
     }
@@ -159,6 +172,7 @@ public class DecryptionEngine {
         int index = 0;
         
         if (direction.equalsIgnoreCase("clockwise") || direction.equalsIgnoreCase("saatYonu")) {
+            
             index = writeSpiralClockwise(grid, text, rows, cols);
         } else {
             
@@ -226,12 +240,13 @@ public class DecryptionEngine {
         grid[top][right] = text.charAt(index++);
         
         while (top <= bottom && left <= right && index < text.length()) {
+            
             for (int i = right - 1; i >= left && top <= bottom && index < text.length(); i--) {
                 grid[top][i] = text.charAt(index++);
             }
             top++;
             
-           
+            
             for (int i = top; i <= bottom && left <= right && index < text.length(); i++) {
                 grid[i][left] = text.charAt(index++);
             }
@@ -332,7 +347,7 @@ public class DecryptionEngine {
                 continue;
             }
             
-           
+            
             if (i + 2 < text.length()) {
                 String symbol = text.substring(i, i + 3);
                 if (reversePigpenMap.containsKey(symbol)) {
@@ -349,6 +364,7 @@ public class DecryptionEngine {
         }
         return result.toString();
     }
+    
     
     private String hillDecrypt(String text, int[][] keyMatrix) {
         int[][] invMatrix = invertMatrix(keyMatrix);
@@ -368,6 +384,7 @@ public class DecryptionEngine {
         }
         return result.toString();
     }
+    
     
     private int[] getKeyOrder(String key) {
         char[] keyChars = key.toCharArray();
@@ -397,6 +414,7 @@ public class DecryptionEngine {
         
         
         if (key != null && !key.trim().isEmpty() && !key.equalsIgnoreCase("default")) {
+            
             for (char c : key.toUpperCase().toCharArray()) {
                 c = normalizeTurkishChar(c);
                 if (Character.isLetter(c) && !used.contains(c) && c != 'J') {

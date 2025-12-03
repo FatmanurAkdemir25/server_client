@@ -68,16 +68,18 @@ public class ClientGUI extends JFrame {
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         
         methodCombo = new JComboBox<>(new String[]{
-            "Caesar Cipher",
+            "Caesar Cipher (Kaydırma)",
             "Vigenere Cipher",
             "Substitution Cipher",
             "Affine Cipher",
-            "Rail Fence Cipher",
-            "Route Cipher",
-            "Columnar Transposition",
+            "Rail Fence Cipher (Zigzag)",
+            "Route Cipher (Yönlü Şifre)",
+            "Columnar Transposition (Sütunlu)",
             "Polybius Square Cipher",
-            "Pigpen Cipher",
-            "Hill Cipher"
+            "Pigpen Cipher (Domuz Ağılı)",
+            "Hill Cipher (Matris Şifreleme)",
+            "DES (Data Encryption Standard)",
+            "AES (Advanced Encryption Standard)"
         });
         methodCombo.setMaximumSize(new Dimension(800, 40));
         methodCombo.addActionListener(e -> updateKeyFieldHint());
@@ -164,6 +166,10 @@ public class ClientGUI extends JFrame {
             keyField.setToolTipText("Anahtar gerekmez (default yazın)");
         } else if (method.startsWith("Hill")) {
             keyField.setToolTipText("Örnek: 3,3,2,5 (2x2 matris: a,b,c,d)");
+        } else if (method.startsWith("DES")) {
+            keyField.setToolTipText("Örnek: 12345678 (8 karakter - 64 bit)");
+        } else if (method.startsWith("AES")) {
+            keyField.setToolTipText("Örnek: 1234567890123456 (16 karakter - 128 bit)");
         }
     }
     

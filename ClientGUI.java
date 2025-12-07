@@ -25,10 +25,10 @@ public class ClientGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
         
-        // Üst panel - Tab butonları
+        
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton clientTab = new JButton("🔒 İstemci (Şifreleme)");
-        JButton serverTab = new JButton("🔓 Sunucu (Deşifreleme)");
+        JButton clientTab = new JButton("İstemci (Şifreleme)");
+        JButton serverTab = new JButton("Sunucu (Deşifreleme)");
         clientTab.setBackground(new Color(33, 150, 243));
         clientTab.setForeground(Color.WHITE);
         serverTab.setBackground(Color.WHITE);
@@ -49,19 +49,19 @@ public class ClientGUI extends JFrame {
         topPanel.add(serverTab);
         add(topPanel, BorderLayout.NORTH);
         
-        // Ana panel
+        
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        // Başlık
-        JLabel titleLabel = new JLabel("🔒 İstemci - Mesaj Şifreleme");
+        
+        JLabel titleLabel = new JLabel("İstemci - Mesaj Şifreleme");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(new Color(33, 150, 243));
         mainPanel.add(titleLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         
-        // Şifreleme yöntemi
+        
         JLabel methodLabel = new JLabel("Şifreleme Yöntemi");
         methodLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(methodLabel);
@@ -88,8 +88,8 @@ public class ClientGUI extends JFrame {
         mainPanel.add(methodCombo);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        // Anahtar
-        JLabel keyLabel = new JLabel("🔑 Anahtar");
+        
+        JLabel keyLabel = new JLabel("Anahtar");
         keyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(keyLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -100,8 +100,8 @@ public class ClientGUI extends JFrame {
         mainPanel.add(keyField);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        // Mesaj
-        JLabel messageLabel = new JLabel("💬 Mesaj");
+        
+        JLabel messageLabel = new JLabel("Mesaj");
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(messageLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -115,8 +115,8 @@ public class ClientGUI extends JFrame {
         mainPanel.add(msgScrollPane);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        // Şifrele butonu
-        encryptButton = new JButton("🔒 Şifrele");
+        
+        encryptButton = new JButton("Şifrele");
         encryptButton.setBackground(new Color(33, 150, 243));
         encryptButton.setForeground(Color.WHITE);
         encryptButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -125,7 +125,7 @@ public class ClientGUI extends JFrame {
         mainPanel.add(encryptButton);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         
-        // Sonuç alanı
+        
         JLabel resultLabel = new JLabel("Şifrelenmiş Mesaj:");
         resultLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(resultLabel);
@@ -180,7 +180,7 @@ public class ClientGUI extends JFrame {
         String key = keyField.getText().trim();
         String message = messageArea.getText().trim();
         
-        // Polybius ve Pigpen için anahtar zorunlu değil - boş string gönder
+        
         if (method.startsWith("Polybius") && key.isEmpty()) {
             key = "";
         }
@@ -188,14 +188,14 @@ public class ClientGUI extends JFrame {
             key = "default";
         }
         
-        // Polybius için mesaj kontrolü yeterli
+        
         if (message.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Lütfen mesaj alanını doldurun!", 
                 "Uyarı", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        // Diğer yöntemler için hem anahtar hem mesaj gerekli
+        
         if (!method.startsWith("Polybius") && !method.startsWith("Pigpen") && key.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Lütfen anahtar alanını doldurun!", 
                 "Uyarı", JOptionPane.WARNING_MESSAGE);
@@ -206,7 +206,7 @@ public class ClientGUI extends JFrame {
             String encrypted = encryptionEngine.encrypt(method, key, message);
             resultArea.setText(encrypted);
             
-            // Sunucuya gönder
+            
             client.sendToServer(method, key, encrypted);
             
             JOptionPane.showMessageDialog(this, 

@@ -27,8 +27,8 @@ public class ServerGUI extends JFrame {
         
         // Üst panel - Tab butonları
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton clientTab = new JButton("🔒 İstemci (Şifreleme)");
-        JButton serverTab = new JButton("🔓 Sunucu (Deşifreleme)");
+        JButton clientTab = new JButton("İstemci (Şifreleme)");
+        JButton serverTab = new JButton("Sunucu (Deşifreleme)");
         clientTab.setBackground(Color.WHITE);
         serverTab.setBackground(new Color(76, 175, 80));
         serverTab.setForeground(Color.WHITE);
@@ -49,19 +49,19 @@ public class ServerGUI extends JFrame {
         topPanel.add(serverTab);
         add(topPanel, BorderLayout.NORTH);
         
-        // Ana panel
+        
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        // Başlık
-        JLabel titleLabel = new JLabel("🔓 Sunucu - Mesaj Deşifreleme");
+        
+        JLabel titleLabel = new JLabel("Sunucu - Mesaj Deşifreleme");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(new Color(76, 175, 80));
         mainPanel.add(titleLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         
-        // Deşifreleme yöntemi
+        
         JLabel methodLabel = new JLabel("Deşifreleme Yöntemi");
         methodLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(methodLabel);
@@ -87,8 +87,7 @@ public class ServerGUI extends JFrame {
         mainPanel.add(methodCombo);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        // Anahtar
-        JLabel keyLabel = new JLabel("🔑 Anahtar");
+        JLabel keyLabel = new JLabel("Anahtar");
         keyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(keyLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -99,7 +98,7 @@ public class ServerGUI extends JFrame {
         mainPanel.add(keyField);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        // Şifreli mesaj
+        
         JLabel encryptedLabel = new JLabel("Şifreli Mesaj");
         encryptedLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(encryptedLabel);
@@ -114,8 +113,8 @@ public class ServerGUI extends JFrame {
         mainPanel.add(encScrollPane);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        // Deşifrele butonu
-        decryptButton = new JButton("🔓 Deşifrele");
+        
+        decryptButton = new JButton("Deşifrele");
         decryptButton.setBackground(new Color(76, 175, 80));
         decryptButton.setForeground(Color.WHITE);
         decryptButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -124,7 +123,7 @@ public class ServerGUI extends JFrame {
         mainPanel.add(decryptButton);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         
-        // Log alanı
+        
         JLabel logLabel = new JLabel("Sunucu Log:");
         logLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         mainPanel.add(logLabel);
@@ -151,7 +150,7 @@ public class ServerGUI extends JFrame {
         String key = keyField.getText().trim();
         String encrypted = encryptedTextArea.getText().trim();
         
-        // Polybius ve Pigpen için anahtar zorunlu değil - boş string gönder
+        
         if (method.startsWith("Polybius") && key.isEmpty()) {
             key = "";
         }
@@ -159,14 +158,14 @@ public class ServerGUI extends JFrame {
             key = "default";
         }
         
-        // Mesaj kontrolü
+        
         if (encrypted.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Lütfen şifreli mesaj alanını doldurun!", 
                 "Uyarı", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        // Diğer yöntemler için hem anahtar hem mesaj gerekli
+        
         if (!method.startsWith("Polybius") && !method.startsWith("Pigpen") && key.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Lütfen anahtar alanını doldurun!", 
                 "Uyarı", JOptionPane.WARNING_MESSAGE);

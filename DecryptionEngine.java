@@ -59,7 +59,7 @@ public class DecryptionEngine {
         throw new IllegalArgumentException("Geçersiz deşifreleme yöntemi!");
     }
     
-    // Caesar Decrypt
+    
     private String caesarDecrypt(String text, int shift) {
         StringBuilder result = new StringBuilder();
         for (char c : text.toCharArray()) {
@@ -74,7 +74,7 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Vigenere Decrypt
+    
     private String vigenereDecrypt(String text, String key) {
         StringBuilder result = new StringBuilder();
         key = key.toUpperCase();
@@ -96,7 +96,7 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Substitution Decrypt
+    
     private String substitutionDecrypt(String text, String key) {
         String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder result = new StringBuilder();
@@ -115,7 +115,7 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Affine Decrypt
+    
     private String affineDecrypt(String text, int a, int b) {
         StringBuilder result = new StringBuilder();
         int aInv = modInverse(a, 26);
@@ -136,7 +136,7 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Rail Fence Decrypt
+    
     private String railFenceDecrypt(String text, int rails) {
         if (rails == 1) return text;
         
@@ -175,23 +175,23 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Route Cipher Decrypt
+    
     private String routeCipherDecrypt(String text, int cols, String direction) {
         int rows = (int) Math.ceil((double) text.length() / cols);
         char[][] grid = new char[rows][cols];
         
-        // Spiral yazma (şifreli metni grid'e yerleştir)
+        
         int index = 0;
         
         if (direction.equalsIgnoreCase("clockwise") || direction.equalsIgnoreCase("saatYonu")) {
-            // Saat yönünde spiral yazma
+            
             index = writeSpiralClockwise(grid, text, rows, cols);
         } else {
-            // Saat yönünün tersine spiral yazma
+            
             index = writeSpiralCounterClockwise(grid, text, rows, cols);
         }
         
-        // Satır satır oku
+        
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -204,35 +204,35 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Saat yönünde spiral yazma
+    
     private int writeSpiralClockwise(char[][] grid, String text, int rows, int cols) {
         int top = 0, bottom = rows - 1;
         int left = 0, right = cols - 1;
         int index = 0;
         
-        // Sağ üst köşeden başla
+        
         grid[top][right] = text.charAt(index++);
         
         while (top <= bottom && left <= right && index < text.length()) {
-            // Yukarıdan aşağıya (sağ kenar)
+            
             for (int i = top + 1; i <= bottom && right >= left && index < text.length(); i++) {
                 grid[i][right] = text.charAt(index++);
             }
             right--;
             
-            // Soldan sağa (alt kenar)
+            
             for (int i = right; i >= left && top <= bottom && index < text.length(); i--) {
                 grid[bottom][i] = text.charAt(index++);
             }
             bottom--;
             
-            // Aşağıdan yukarıya (sol kenar)
+            
             for (int i = bottom; i >= top && left <= right && index < text.length(); i--) {
                 grid[i][left] = text.charAt(index++);
             }
             left++;
             
-            // Sağdan sola (üst kenar)
+            
             for (int i = left; i <= right && top <= bottom && index < text.length(); i++) {
                 grid[top][i] = text.charAt(index++);
             }
@@ -242,35 +242,35 @@ public class DecryptionEngine {
         return index;
     }
     
-    // Saat yönünün tersine spiral yazma
+    
     private int writeSpiralCounterClockwise(char[][] grid, String text, int rows, int cols) {
         int top = 0, bottom = rows - 1;
         int left = 0, right = cols - 1;
         int index = 0;
         
-        // Sağ üst köşeden başla
+        
         grid[top][right] = text.charAt(index++);
         
         while (top <= bottom && left <= right && index < text.length()) {
-            // Sağdan sola (üst kenar)
+            
             for (int i = right - 1; i >= left && top <= bottom && index < text.length(); i--) {
                 grid[top][i] = text.charAt(index++);
             }
             top++;
             
-            // Yukarıdan aşağıya (sol kenar)
+            
             for (int i = top; i <= bottom && left <= right && index < text.length(); i++) {
                 grid[i][left] = text.charAt(index++);
             }
             left++;
             
-            // Soldan sağa (alt kenar)
+            
             for (int i = left; i <= right && top <= bottom && index < text.length(); i++) {
                 grid[bottom][i] = text.charAt(index++);
             }
             bottom--;
             
-            // Aşağıdan yukarıya (sağ kenar)
+            
             for (int i = bottom; i >= top && left <= right && index < text.length(); i--) {
                 grid[i][right] = text.charAt(index++);
             }
@@ -280,7 +280,7 @@ public class DecryptionEngine {
         return index;
     }
     
-    // Columnar Transposition Decrypt
+    
     private String columnarTranspositionDecrypt(String text, String key) {
         int colonIndex = text.indexOf(':');
         int originalLength = Integer.parseInt(text.substring(0, colonIndex));
@@ -309,7 +309,7 @@ public class DecryptionEngine {
         return result.substring(0, originalLength);
     }
     
-    // Polybius Square Decrypt
+    
     private String polybiusDecrypt(String text, String key) {
         char[][] square = createPolybiusSquare(key);
         StringBuilder result = new StringBuilder();
@@ -333,7 +333,7 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Türkçe karakterleri normalize et
+    
     private char normalizeTurkishChar(char c) {
         switch(c) {
             case 'Ç': return 'C';
@@ -346,7 +346,7 @@ public class DecryptionEngine {
         }
     }
     
-    // Pigpen Cipher Decrypt
+    
     private String pigpenDecrypt(String text) {
         Map<String, Character> reversePigpenMap = createReversePigpenMap();
         StringBuilder result = new StringBuilder();
@@ -359,7 +359,7 @@ public class DecryptionEngine {
                 continue;
             }
             
-            // 3 karakterlik sembol oku
+            
             if (i + 2 < text.length()) {
                 String symbol = text.substring(i, i + 3);
                 if (reversePigpenMap.containsKey(symbol)) {
@@ -377,7 +377,7 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Hill Cipher Decrypt
+    
     private String hillDecrypt(String text, int[][] keyMatrix) {
         int[][] invMatrix = invertMatrix(keyMatrix);
         StringBuilder result = new StringBuilder();
@@ -397,7 +397,7 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Helper Methods
+    
     private int[] getKeyOrder(String key) {
         char[] keyChars = key.toCharArray();
         int[] order = new int[key.length()];
@@ -424,7 +424,7 @@ public class DecryptionEngine {
         Set<Character> used = new HashSet<>();
         StringBuilder alphabet = new StringBuilder();
         
-        // Anahtar boş değilse ve "default" değilse kullan
+        
         if (key != null && !key.trim().isEmpty() && !key.equalsIgnoreCase("default")) {
             // Anahtar kelimeyi ekle (Türkçe karakterleri normalize et)
             for (char c : key.toUpperCase().toCharArray()) {
@@ -439,7 +439,7 @@ public class DecryptionEngine {
             }
         }
         
-        // Kalan harfleri alfabetik sıraya göre ekle (J hariç)
+        
         for (char c = 'A'; c <= 'Z'; c++) {
             if (!used.contains(c) && c != 'J') {
                 alphabet.append(c);
@@ -447,7 +447,7 @@ public class DecryptionEngine {
             }
         }
         
-        // 5x5 tablo oluştur
+        
         char[][] square = new char[5][5];
         int index = 0;
         for (int i = 0; i < 5; i++) {

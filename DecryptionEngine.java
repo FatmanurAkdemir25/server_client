@@ -6,8 +6,15 @@ public class DecryptionEngine {
     private AESAlgorithm aes = new AESAlgorithm();
     private DESLibrary desLib = new DESLibrary();
     private AESLibrary aesLib = new AESLibrary();
+    private RSAAlgorithm rsa = new RSAAlgorithm();
+    private RSALibrary rsaLib = new RSALibrary();
     
     public String decrypt(String method, String key, String encryptedText) throws Exception {
+        System.out.println("\n=== DECRYPTION DEBUG ===");
+        System.out.println("Method: " + method);
+        System.out.println("Key: " + key);
+        System.out.println("Encrypted Text Length: " + encryptedText.length());
+
         if (method.startsWith("Caesar")) {
             return caesarDecrypt(encryptedText, Integer.parseInt(key));
         } else if (method.startsWith("Vigenere")) {
@@ -55,6 +62,12 @@ public class DecryptionEngine {
                 throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı!");
             }
             return aesLib.decrypt(encryptedText, key);
+        }else if (method.contains("Manuel") && method.contains("RSA")) {
+            System.out.println("Using RSA Manual Implementation");
+            return rsa.decrypt(encryptedText, key);
+        } else if (method.contains("Java") && method.contains("RSA")) {
+            System.out.println("Using RSA Java Library");
+            return rsaLib.decrypt(encryptedText, key);
         }
         throw new IllegalArgumentException("Geçersiz deşifreleme yöntemi!");
     }

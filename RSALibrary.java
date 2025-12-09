@@ -6,28 +6,28 @@ import java.util.Base64;
 public class RSALibrary {
     
     private KeyPair keyPair;
-    private static final int KEY_SIZE = 1024; // 1024-bit RSA
+    private static final int KEY_SIZE = 1024; 
     
-    // RSA Şifreleme (Kütüphane ile)
+    
     public String encrypt(String plaintext, String key) throws Exception {
         try {
             System.out.println("\n=== RSA Library Encryption ===");
             
-            // Anahtar çifti üret veya kullan
+            
             if (key.equals("auto") || key.isEmpty()) {
                 generateKeyPair();
             } else {
-                // Özel format: kullanıcı kendi anahtarını sağlayamaz, otomatik üret
+                
                 generateKeyPair();
             }
             
-            // Public key ile şifrele
+            
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
             
             byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes("UTF-8"));
             
-            // Public key'i Base64 olarak ekle (deşifreleme için private key gerekecek)
+            
             PublicKey publicKey = keyPair.getPublic();
             String publicKeyStr = Base64.getEncoder().encodeToString(publicKey.getEncoded());
             
@@ -40,7 +40,7 @@ public class RSALibrary {
             System.out.println("Private Key (Base64): " + privateKeyStr.substring(0, 50) + "...");
             System.out.println("Encrypted Text: " + encryptedText);
             
-            // Format: PRIVATE_KEY:ENCRYPTED_TEXT
+            
             return privateKeyStr + ":" + encryptedText;
             
         } catch (Exception e) {
@@ -48,12 +48,12 @@ public class RSALibrary {
         }
     }
     
-    // RSA Deşifreleme (Kütüphane ile)
+    
     public String decrypt(String ciphertext, String key) throws Exception {
         try {
             System.out.println("\n=== RSA Library Decryption ===");
             
-            // Format: PRIVATE_KEY:ENCRYPTED_TEXT
+            
             String[] parts = ciphertext.split(":");
             if (parts.length != 2) {
                 throw new Exception("Geçersiz şifreli metin formatı! Format: PRIVATE_KEY:ENCRYPTED_TEXT");
@@ -65,16 +65,16 @@ public class RSALibrary {
             System.out.println("Private Key Length: " + privateKeyStr.length());
             System.out.println("Encrypted Text: " + encryptedText);
             
-            // Private key'i decode et
+            
             byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyStr);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
             PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
             
-            // Şifreli metni decode et
+            
             byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
             
-            // Deşifrele
+            
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             
@@ -91,7 +91,7 @@ public class RSALibrary {
         }
     }
     
-    // Anahtar çifti üretimi
+    
     private void generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(KEY_SIZE);

@@ -78,6 +78,7 @@ public class ServerGUI extends JFrame {
             "Polybius Square Cipher",
             "Pigpen Cipher (Domuz Ağılı)",
             "Hill Cipher (Matris Şifreleme)",
+            "Playfair Cipher",
             "DES (Manuel Implementasyon)",
             "AES (Manuel Implementasyon)",
             "DES (Java Kütüphanesi)",

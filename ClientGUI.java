@@ -78,6 +78,7 @@ public class ClientGUI extends JFrame {
             "Polybius Square Cipher",
             "Pigpen Cipher (Domuz Ağılı)",
             "Hill Cipher (Matris Şifreleme)",
+            "Playfair Cipher",
             "DES (Manuel Implementasyon)",
             "AES (Manuel Implementasyon)",
             "DES (Java Kütüphanesi)",
@@ -170,6 +171,8 @@ public class ClientGUI extends JFrame {
             keyField.setToolTipText("Anahtar gerekmez (default yazın)");
         } else if (method.startsWith("Hill")) {
             keyField.setToolTipText("Örnek: 3,3,2,5 (2x2 matris: a,b,c,d)");
+        } else if (method.startsWith("Playfair")) {
+            keyField.setToolTipText("Örnek: KEYWORD (anahtar kelime - boş bırakılabilir)");
         } else if (method.contains("DES")) {
             keyField.setToolTipText("Örnek: 12345678 (8 karakter - 64 bit)");
         } else if (method.contains("AES")) {
@@ -211,6 +214,7 @@ public class ClientGUI extends JFrame {
         try {
             String encrypted = encryptionEngine.encrypt(method, key, message);
             resultArea.setText(encrypted);
+            
             
             client.sendToServer(method, key, encrypted);
             

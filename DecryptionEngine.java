@@ -42,7 +42,9 @@ public class DecryptionEngine {
             int[][] keyMatrix = {{Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim())},
                                  {Integer.parseInt(parts[2].trim()), Integer.parseInt(parts[3].trim())}};
             return hillDecrypt(encryptedText, keyMatrix);
-        } else if (method.startsWith("DES (Manuel")) {
+        } else if (method.startsWith("Playfair")) {
+            return playfairDecrypt(encryptedText, key);
+        }else if (method.startsWith("DES (Manuel")) {
             if (key.length() != 8) {
                 throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı!");
             }
@@ -509,5 +511,92 @@ public class DecryptionEngine {
             if ((a * x) % m == 1) return x;
         }
         return -1;
+    }
+    private String playfairDecrypt(String text, String key) {
+        char[][] matrix = createPlayfairMatrix(key);
+        
+        StringBuilder result = new StringBuilder();
+        
+        // İki harfli gruplar halinde deşifrele
+        for (int i = 0; i < text.length(); i += 2) {
+            char a = text.charAt(i);
+            char b = text.charAt(i + 1);
+            
+            int[] posA = findPosition(matrix, a);
+            int[] posB = findPosition(matrix, b);
+            
+            if (posA[0] == posB[0]) {
+                // Aynı satırda
+                result.append(matrix[posA[0]][(posA[1] + 4) % 5]);
+                result.append(matrix[posB[0]][(posB[1] + 4) % 5]);
+            } else if (posA[1] == posB[1]) {
+                // Aynı sütunda
+                result.append(matrix[(posA[0] + 4) % 5][posA[1]]);
+                result.append(matrix[(posB[0] + 4) % 5][posB[1]]);
+            } else {
+                // Dikdörtgen
+                result.append(matrix[posA[0]][posB[1]]);
+                result.append(matrix[posB[0]][posA[1]]);
+            }
+        }
+        
+        return result.toString();
+    }
+    
+    // Playfair matrisi oluştur
+    private char[][] createPlayfairMatrix(String key) {
+        char[][] matrix = new char[5][5];
+        boolean[] used = new boolean[26];
+        used['J' - 'A'] = true;
+        
+        int row = 0, col = 0;
+        
+        // Anahtar kelimeyi ekle
+        if (key != null && !key.isEmpty()) {
+            for (char c : key.toUpperCase().toCharArray()) {
+                if (!Character.isLetter(c)) continue;
+                if (c == 'J') c = 'I';
+                
+                int index = c - 'A';
+                if (!used[index]) {
+                    matrix[row][col] = c;
+                    used[index] = true;
+                    col++;
+                    if (col == 5) {
+                        col = 0;
+                        row++;
+                    }
+                }
+            }
+        }
+        
+        // Kalan harfleri ekle
+        for (char c = 'A'; c <= 'Z'; c++) {
+            if (c == 'J') continue;
+            int index = c - 'A';
+            if (!used[index]) {
+                matrix[row][col] = c;
+                used[index] = true;
+                col++;
+                if (col == 5) {
+                    col = 0;
+                    row++;
+                }
+            }
+        }
+        
+        return matrix;
+    }
+    
+    // Matristeki pozisyonu bul
+    private int[] findPosition(char[][] matrix, char c) {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                if (matrix[i][j] == c) {
+                    return new int[]{i, j};
+                }
+            }
+        }
+        return new int[]{0, 0};
     }
 }

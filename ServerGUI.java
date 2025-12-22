@@ -10,11 +10,11 @@ public class ServerGUI extends JFrame {
     private JTextArea encryptedTextArea;
     private JButton decryptButton;
     private CryptoServer server;
-    private DecryptionEngine decryptionEngine;
+    private DecryptionEngine decryptionEngine;  // DEĞİŞTİ
 
     public ServerGUI() {
         instance = this;
-        decryptionEngine = new DecryptionEngine();
+        decryptionEngine = new DecryptionEngine();  // DEĞİŞTİ
         initComponents();
         server = new CryptoServer(this);
         server.startServer();
@@ -23,13 +23,10 @@ public class ServerGUI extends JFrame {
     private void initComponents() {
 
         setTitle("Sunucu - Mesaj Deşifreleme");
-        setSize(850, 700);  // ---- CLIENT İLE AYNI BOYUT ----
+        setSize(850, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        // ---------------------------------------------------
-        // ÜST TAB BUTTONLARI
-        // ---------------------------------------------------
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         JButton clientTab = new JButton("İstemci (Şifreleme)");
@@ -52,14 +49,10 @@ public class ServerGUI extends JFrame {
         topPanel.add(serverTab);
         add(topPanel, BorderLayout.NORTH);
 
-        // ---------------------------------------------------
-        // ANA PANEL (CLIENT İLE AYNI TASARIM)
-        // ---------------------------------------------------
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // ----- BAŞLIK -----
         JLabel titleLabel = new JLabel("Sunucu - Mesaj Deşifreleme");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(new Color(76, 175, 80));
@@ -67,9 +60,6 @@ public class ServerGUI extends JFrame {
         mainPanel.add(titleLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // ============================
-        //   DEŞİFRELEME YÖNTEMİ
-        // ============================
         JLabel methodLabel = new JLabel("Deşifreleme Yöntemi");
         methodLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         methodLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -91,19 +81,14 @@ public class ServerGUI extends JFrame {
                 "DES (Manuel Implementasyon)",
                 "AES (Manuel Implementasyon)",
                 "DES (Java Kütüphanesi)",
-                "AES (Java Kütüphanesi)",
-                "RSA (Manuel Implementasyon)",
-                "RSA (Java Kütüphanesi)"
+                "AES (Java Kütüphanesi)"
         });
         methodCombo.setMaximumSize(new Dimension(800, 40));
         methodCombo.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(methodCombo);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // ============================
-        //   ANAHTAR
-        // ============================
-        JLabel keyLabel = new JLabel("Anahtar");
+        JLabel keyLabel = new JLabel("Anahtar (DES/AES için otomatik çözülür)");
         keyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         keyLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(keyLabel);
@@ -113,12 +98,10 @@ public class ServerGUI extends JFrame {
         keyField.setFont(new Font("Arial", Font.PLAIN, 14));
         keyField.setMaximumSize(new Dimension(800, 40));
         keyField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        keyField.setEditable(false);  // DES/AES için otomatik
         mainPanel.add(keyField);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // ============================
-        //   ŞİFRELİ MESAJ
-        // ============================
         JLabel encLabel = new JLabel("Şifreli Mesaj");
         encLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         encLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -135,9 +118,6 @@ public class ServerGUI extends JFrame {
         mainPanel.add(encScrollPane);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // ============================
-        //   DEŞİFRE BUTONU
-        // ============================
         decryptButton = new JButton("Deşifrele");
         decryptButton.setBackground(new Color(76, 175, 80));
         decryptButton.setForeground(Color.WHITE);
@@ -148,21 +128,15 @@ public class ServerGUI extends JFrame {
         mainPanel.add(decryptButton);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // ============================
-        //   LOG BAŞLIK
-        // ============================
         JLabel logLabel = new JLabel("Sunucu Log:");
         logLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         logLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(logLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        // ============================
-        //   LOG ALANI
-        // ============================
         logArea = new JTextArea(8, 40);
         logArea.setEditable(false);
-        logArea.setFont(new Font("Courier New", 13, 13));
+        logArea.setFont(new Font("Courier New", Font.PLAIN, 13));
         JScrollPane logScroll = new JScrollPane(logArea);
         logScroll.setMaximumSize(new Dimension(800, 200));
         logScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -188,16 +162,18 @@ public class ServerGUI extends JFrame {
             return;
         }
 
-        if (!method.startsWith("Polybius") && !method.startsWith("Pigpen") && key.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Anahtar boş bırakılamaz!");
-            return;
+        // DES/AES için anahtar kontrolü yapma (hibrit sistemde otomatik)
+        if (!method.contains("DES") && !method.contains("AES")) {
+            if (!method.startsWith("Polybius") && !method.startsWith("Pigpen") && key.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Anahtar boş bırakılamaz!");
+                return;
+            }
         }
 
         try {
             String decrypted = decryptionEngine.decrypt(method, key, encryptedText);
 
             log("=== DEŞİFRE EDİLDİ ===\nYöntem: " + method +
-                    "\nAnahtar: " + key +
                     "\nSonuç: " + decrypted + "\n");
 
             JOptionPane.showMessageDialog(this,

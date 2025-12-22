@@ -10,12 +10,12 @@ public class ClientGUI extends JFrame {
     private JButton encryptButton;
     private JTextArea resultArea;
     private CryptoClient client;
-    private EncryptionEngine encryptionEngine;
+    private EncryptionEngine encryptionEngine;  // DEĞİŞTİ
 
     public ClientGUI() {
         instance = this;
         client = new CryptoClient();
-        encryptionEngine = new EncryptionEngine();
+        encryptionEngine = new EncryptionEngine();  // DEĞİŞTİ
         initComponents();
     }
 
@@ -48,12 +48,9 @@ public class ClientGUI extends JFrame {
         topPanel.add(serverTab);
         add(topPanel, BorderLayout.NORTH);
 
-        // Ana panel
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        // ----------- HİZALAMA KODU -----------
         mainPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel titleLabel = new JLabel("İstemci - Mesaj Şifreleme");
@@ -84,9 +81,7 @@ public class ClientGUI extends JFrame {
                 "DES (Manuel Implementasyon)",
                 "AES (Manuel Implementasyon)",
                 "DES (Java Kütüphanesi)",
-                "AES (Java Kütüphanesi)",
-                "RSA (Manuel Implementasyon)",
-                "RSA (Java Kütüphanesi)"
+                "AES (Java Kütüphanesi)"
         });
         methodCombo.setMaximumSize(new Dimension(800, 40));
         methodCombo.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -94,7 +89,7 @@ public class ClientGUI extends JFrame {
         mainPanel.add(methodCombo);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        JLabel keyLabel = new JLabel("Anahtar");
+        JLabel keyLabel = new JLabel("Anahtar (RSA Parametreleri)");
         keyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         keyLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(keyLabel);
@@ -123,13 +118,12 @@ public class ClientGUI extends JFrame {
         mainPanel.add(msgScrollPane);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // --- Şifrele Butonu (Hizasız Olan Kısmı Düzelttik) ---
         encryptButton = new JButton("Şifrele");
         encryptButton.setBackground(new Color(33, 150, 243));
         encryptButton.setForeground(Color.WHITE);
         encryptButton.setFont(new Font("Arial", Font.BOLD, 16));
         encryptButton.setMaximumSize(new Dimension(800, 50));
-        encryptButton.setAlignmentX(Component.LEFT_ALIGNMENT);  // *** KRİTİK DÜZELTME ***
+        encryptButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         encryptButton.addActionListener(e -> performEncryption());
         mainPanel.add(encryptButton);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -158,23 +152,35 @@ public class ClientGUI extends JFrame {
 
     private void updateKeyFieldHint() {
         String method = (String) methodCombo.getSelectedItem();
-        if (method.startsWith("Caesar")) keyField.setToolTipText("Örnek: 3 (1-25)");
-        else if (method.startsWith("Vigenere")) keyField.setToolTipText("Örnek: ANAHTAR");
-        else if (method.startsWith("Substitution")) keyField.setToolTipText("26 harf dizilimi");
-        else if (method.startsWith("Affine")) keyField.setToolTipText("Örnek: 5,8 (a,b)");
-        else if (method.startsWith("Rail Fence")) keyField.setToolTipText("Örnek: 3");
-        else if (method.startsWith("Route")) keyField.setToolTipText("Örnek: 5,clockwise");
-        else if (method.startsWith("Columnar")) keyField.setToolTipText("Örnek: KEY");
-        else if (method.startsWith("Polybius")) keyField.setToolTipText("Anahtar opsiyonel");
-        else if (method.startsWith("Pigpen")) keyField.setToolTipText("default yazın");
-        else if (method.startsWith("Hill")) keyField.setToolTipText("Örnek: 3,3,2,5 (matris)");
-        else if (method.startsWith("Playfair")) keyField.setToolTipText("Anahtar kelime");
-        else if (method.contains("DES")) keyField.setToolTipText("8 karakter");
-        else if (method.contains("AES")) keyField.setToolTipText("16 karakter");
-        else if (method.contains("RSA") && method.contains("Manuel"))
-            keyField.setToolTipText("Örnek: 61,53 veya auto");
-        else if (method.contains("RSA") && method.contains("Java"))
-            keyField.setToolTipText("auto");
+        
+        // DES/AES için yeni ipuçları
+        if (method.contains("DES") || method.contains("AES")) {
+            keyField.setToolTipText("RSA için: p,q (örn: 61,53) veya 'auto' yazın. RSA ile DES/AES anahtarı üretilecek");
+        }
+        // Klasik yöntemler
+        else if (method.startsWith("Caesar")) {
+            keyField.setToolTipText("Örnek: 3 (1-25)");
+        } else if (method.startsWith("Vigenere")) {
+            keyField.setToolTipText("Örnek: ANAHTAR");
+        } else if (method.startsWith("Substitution")) {
+            keyField.setToolTipText("26 harf dizilimi");
+        } else if (method.startsWith("Affine")) {
+            keyField.setToolTipText("Örnek: 5,8 (a,b)");
+        } else if (method.startsWith("Rail Fence")) {
+            keyField.setToolTipText("Örnek: 3");
+        } else if (method.startsWith("Route")) {
+            keyField.setToolTipText("Örnek: 5,clockwise");
+        } else if (method.startsWith("Columnar")) {
+            keyField.setToolTipText("Örnek: KEY");
+        } else if (method.startsWith("Polybius")) {
+            keyField.setToolTipText("Anahtar opsiyonel");
+        } else if (method.startsWith("Pigpen")) {
+            keyField.setToolTipText("default yazın");
+        } else if (method.startsWith("Hill")) {
+            keyField.setToolTipText("Örnek: 3,3,2,5 (matris)");
+        } else if (method.startsWith("Playfair")) {
+            keyField.setToolTipText("Anahtar kelime");
+        }
     }
 
     private void performEncryption() {
@@ -184,13 +190,14 @@ public class ClientGUI extends JFrame {
 
         if (method.startsWith("Polybius") && key.isEmpty()) key = "";
         if (method.startsWith("Pigpen") && key.isEmpty()) key = "default";
+        
+        // DES/AES için varsayılan "auto"
+        if ((method.contains("DES") || method.contains("AES")) && key.isEmpty()) {
+            key = "auto";
+        }
 
         if (message.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Lütfen mesaj girin!", "Uyarı", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        if (!method.startsWith("Polybius") && !method.startsWith("Pigpen") && key.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Lütfen anahtar girin!", "Uyarı", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -201,7 +208,7 @@ public class ClientGUI extends JFrame {
             client.sendToServer(method, key, encrypted);
 
             JOptionPane.showMessageDialog(this,
-                    "Şifreleme başarılı!\nVeriler sunucuya gönderildi.",
+                    "Şifreleme başarılı!\nRSA ile anahtar üretildi ve DES/AES ile şifrelendi.\nVeriler sunucuya gönderildi.",
                     "Başarılı", JOptionPane.INFORMATION_MESSAGE);
 
         } catch (IOException e) {

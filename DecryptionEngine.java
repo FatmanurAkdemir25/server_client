@@ -6,15 +6,14 @@ public class DecryptionEngine {
     private AESAlgorithm aes = new AESAlgorithm();
     private DESLibrary desLib = new DESLibrary();
     private AESLibrary aesLib = new AESLibrary();
-    private RSAAlgorithm rsa = new RSAAlgorithm();
-    private RSALibrary rsaLib = new RSALibrary();
     
     public String decrypt(String method, String key, String encryptedText) throws Exception {
-        System.out.println("\n=== DECRYPTION DEBUG ===");
+        System.out.println("\n=== HYBRID DECRYPTION DEBUG ===");
         System.out.println("Method: " + method);
         System.out.println("Key: " + key);
         System.out.println("Encrypted Text Length: " + encryptedText.length());
 
+        // Klasik şifreleme metodları
         if (method.startsWith("Caesar")) {
             return caesarDecrypt(encryptedText, Integer.parseInt(key));
         } else if (method.startsWith("Vigenere")) {
@@ -44,36 +43,129 @@ public class DecryptionEngine {
             return hillDecrypt(encryptedText, keyMatrix);
         } else if (method.startsWith("Playfair")) {
             return playfairDecrypt(encryptedText, key);
-        }else if (method.startsWith("DES (Manuel")) {
-            if (key.length() != 8) {
-                throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı!");
-            }
-            return des.decrypt(encryptedText, key);
-        } else if (method.startsWith("AES (Manuel")) {
-            if (key.length() != 16) {
-                throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı!");
-            }
-            return aes.decrypt(encryptedText, key);
-        } else if (method.startsWith("DES (Java")) {
-            if (key.length() != 8) {
-                throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı!");
-            }
-            return desLib.decrypt(encryptedText, key);
-        } else if (method.startsWith("AES (Java")) {
-            if (key.length() != 16) {
-                throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı!");
-            }
-            return aesLib.decrypt(encryptedText, key);
-        }else if (method.contains("Manuel") && method.contains("RSA")) {
-            System.out.println("Using RSA Manual Implementation");
-            return rsa.decrypt(encryptedText, key);
-        } else if (method.contains("Java") && method.contains("RSA")) {
-            System.out.println("Using RSA Java Library");
-            return rsaLib.decrypt(encryptedText, key);
         }
+        
+        // HİBRİT DEŞİFRELEME
+        else if (method.contains("DES") && method.contains("Manuel")) {
+            return hybridDESManualDecrypt(encryptedText);
+        } else if (method.contains("AES") && method.contains("Manuel")) {
+            return hybridAESManualDecrypt(encryptedText);
+        } else if (method.contains("DES") && method.contains("Java")) {
+            return hybridDESLibraryDecrypt(encryptedText);
+        } else if (method.contains("AES") && method.contains("Java")) {
+            return hybridAESLibraryDecrypt(encryptedText);
+        }
+        
         throw new IllegalArgumentException("Geçersiz deşifreleme yöntemi!");
     }
     
+    // ==========================================
+    //  HİBRİT DEŞİFRELEME METODLARı
+    // ==========================================
+    
+    /**
+     * Hibrit DES Manuel deşifreleme
+     * Format: RSA_KEYS|DES_KEY|ENCRYPTED_MESSAGE
+     */
+    private String hybridDESManualDecrypt(String encryptedData) throws Exception {
+        System.out.println("\n=== HYBRID DES MANUAL DECRYPT ===");
+        
+        String[] parts = encryptedData.split("\\|");
+        if (parts.length < 3) {
+            throw new Exception("Geçersiz format! Beklenen: RSA_KEYS|DES_KEY|ENCRYPTED_MESSAGE");
+        }
+        
+        String rsaKeys = parts[0];
+        String desKey = parts[1];
+        String encrypted = parts[2];
+        
+        System.out.println("DES Key: " + desKey);
+        System.out.println("Encrypted Message: " + encrypted.substring(0, Math.min(50, encrypted.length())) + "...");
+        
+        // DES ile deşifrele
+        String decrypted = des.decrypt(encrypted, desKey);
+        
+        System.out.println("Decrypted: " + decrypted);
+        return decrypted;
+    }
+    
+    /**
+     * Hibrit AES Manuel deşifreleme
+     * Format: RSA_KEYS|AES_KEY|ENCRYPTED_MESSAGE
+     */
+    private String hybridAESManualDecrypt(String encryptedData) throws Exception {
+        System.out.println("\n=== HYBRID AES MANUAL DECRYPT ===");
+        
+        String[] parts = encryptedData.split("\\|");
+        if (parts.length < 3) {
+            throw new Exception("Geçersiz format! Beklenen: RSA_KEYS|AES_KEY|ENCRYPTED_MESSAGE");
+        }
+        
+        String rsaKeys = parts[0];
+        String aesKey = parts[1];
+        String encrypted = parts[2];
+        
+        System.out.println("AES Key: " + aesKey);
+        System.out.println("Encrypted Message: " + encrypted.substring(0, Math.min(50, encrypted.length())) + "...");
+        
+        // AES ile deşifrele
+        String decrypted = aes.decrypt(encrypted, aesKey);
+        
+        System.out.println("Decrypted: " + decrypted);
+        return decrypted;
+    }
+    
+    /**
+     * Hibrit DES Library deşifreleme
+     */
+    private String hybridDESLibraryDecrypt(String encryptedData) throws Exception {
+        System.out.println("\n=== HYBRID DES LIBRARY DECRYPT ===");
+        
+        String[] parts = encryptedData.split("\\|");
+        if (parts.length < 3) {
+            throw new Exception("Geçersiz format!");
+        }
+        
+        String rsaKeys = parts[0];
+        String desKey = parts[1];
+        String encrypted = parts[2];
+        
+        System.out.println("DES Key: " + desKey);
+        
+        // DES Library ile deşifrele
+        String decrypted = desLib.decrypt(encrypted, desKey);
+        
+        System.out.println("Decrypted: " + decrypted);
+        return decrypted;
+    }
+    
+    /**
+     * Hibrit AES Library deşifreleme
+     */
+    private String hybridAESLibraryDecrypt(String encryptedData) throws Exception {
+        System.out.println("\n=== HYBRID AES LIBRARY DECRYPT ===");
+        
+        String[] parts = encryptedData.split("\\|");
+        if (parts.length < 3) {
+            throw new Exception("Geçersiz format!");
+        }
+        
+        String rsaKeys = parts[0];
+        String aesKey = parts[1];
+        String encrypted = parts[2];
+        
+        System.out.println("AES Key: " + aesKey);
+        
+        // AES Library ile deşifrele
+        String decrypted = aesLib.decrypt(encrypted, aesKey);
+        
+        System.out.println("Decrypted: " + decrypted);
+        return decrypted;
+    }
+    
+    // ==========================================
+    //  KLASİK DEŞİFRELEME METODLARı (DEĞİŞMEDİ)
+    // ==========================================
     
     private String caesarDecrypt(String text, int shift) {
         StringBuilder result = new StringBuilder();
@@ -88,7 +180,6 @@ public class DecryptionEngine {
         }
         return result.toString();
     }
-    
     
     private String vigenereDecrypt(String text, String key) {
         StringBuilder result = new StringBuilder();
@@ -111,7 +202,6 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    
     private String substitutionDecrypt(String text, String key) {
         String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder result = new StringBuilder();
@@ -129,7 +219,6 @@ public class DecryptionEngine {
         }
         return result.toString();
     }
-    
     
     private String affineDecrypt(String text, int a, int b) {
         StringBuilder result = new StringBuilder();
@@ -150,7 +239,6 @@ public class DecryptionEngine {
         }
         return result.toString();
     }
-    
     
     private String railFenceDecrypt(String text, int rails) {
         if (rails == 1) return text;
@@ -190,22 +278,17 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    
     private String routeCipherDecrypt(String text, int cols, String direction) {
         int rows = (int) Math.ceil((double) text.length() / cols);
         char[][] grid = new char[rows][cols];
         
-        
         int index = 0;
         
         if (direction.equalsIgnoreCase("clockwise") || direction.equalsIgnoreCase("saatYonu")) {
-            
             index = writeSpiralClockwise(grid, text, rows, cols);
         } else {
-            
             index = writeSpiralCounterClockwise(grid, text, rows, cols);
         }
-        
         
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < rows; i++) {
@@ -219,34 +302,28 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    
     private int writeSpiralClockwise(char[][] grid, String text, int rows, int cols) {
         int top = 0, bottom = rows - 1;
         int left = 0, right = cols - 1;
         int index = 0;
         
-        
         grid[top][right] = text.charAt(index++);
         
         while (top <= bottom && left <= right && index < text.length()) {
-            
             for (int i = top + 1; i <= bottom && right >= left && index < text.length(); i++) {
                 grid[i][right] = text.charAt(index++);
             }
             right--;
-            
             
             for (int i = right; i >= left && top <= bottom && index < text.length(); i--) {
                 grid[bottom][i] = text.charAt(index++);
             }
             bottom--;
             
-            
             for (int i = bottom; i >= top && left <= right && index < text.length(); i--) {
                 grid[i][left] = text.charAt(index++);
             }
             left++;
-            
             
             for (int i = left; i <= right && top <= bottom && index < text.length(); i++) {
                 grid[top][i] = text.charAt(index++);
@@ -257,34 +334,28 @@ public class DecryptionEngine {
         return index;
     }
     
-    
     private int writeSpiralCounterClockwise(char[][] grid, String text, int rows, int cols) {
         int top = 0, bottom = rows - 1;
         int left = 0, right = cols - 1;
         int index = 0;
         
-        
         grid[top][right] = text.charAt(index++);
         
         while (top <= bottom && left <= right && index < text.length()) {
-            
             for (int i = right - 1; i >= left && top <= bottom && index < text.length(); i--) {
                 grid[top][i] = text.charAt(index++);
             }
             top++;
-            
             
             for (int i = top; i <= bottom && left <= right && index < text.length(); i++) {
                 grid[i][left] = text.charAt(index++);
             }
             left++;
             
-            
             for (int i = left; i <= right && top <= bottom && index < text.length(); i++) {
                 grid[bottom][i] = text.charAt(index++);
             }
             bottom--;
-            
             
             for (int i = bottom; i >= top && left <= right && index < text.length(); i--) {
                 grid[i][right] = text.charAt(index++);
@@ -294,7 +365,6 @@ public class DecryptionEngine {
         
         return index;
     }
-    
     
     private String columnarTranspositionDecrypt(String text, String key) {
         int colonIndex = text.indexOf(':');
@@ -324,7 +394,6 @@ public class DecryptionEngine {
         return result.substring(0, originalLength);
     }
     
-    
     private String polybiusDecrypt(String text, String key) {
         char[][] square = createPolybiusSquare(key);
         StringBuilder result = new StringBuilder();
@@ -348,7 +417,6 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    
     private char normalizeTurkishChar(char c) {
         switch(c) {
             case 'Ç': return 'C';
@@ -361,7 +429,6 @@ public class DecryptionEngine {
         }
     }
     
-    
     private String pigpenDecrypt(String text) {
         Map<String, Character> reversePigpenMap = createReversePigpenMap();
         StringBuilder result = new StringBuilder();
@@ -373,7 +440,6 @@ public class DecryptionEngine {
                 i++;
                 continue;
             }
-            
             
             if (i + 2 < text.length()) {
                 String symbol = text.substring(i, i + 3);
@@ -391,7 +457,6 @@ public class DecryptionEngine {
         }
         return result.toString();
     }
-    
     
     private String hillDecrypt(String text, int[][] keyMatrix) {
         int[][] invMatrix = invertMatrix(keyMatrix);
@@ -411,7 +476,6 @@ public class DecryptionEngine {
         }
         return result.toString();
     }
-    
     
     private int[] getKeyOrder(String key) {
         char[] keyChars = key.toCharArray();
@@ -439,9 +503,7 @@ public class DecryptionEngine {
         Set<Character> used = new HashSet<>();
         StringBuilder alphabet = new StringBuilder();
         
-        
         if (key != null && !key.trim().isEmpty() && !key.equalsIgnoreCase("default")) {
-            // Anahtar kelimeyi ekle (Türkçe karakterleri normalize et)
             for (char c : key.toUpperCase().toCharArray()) {
                 c = normalizeTurkishChar(c);
                 if (Character.isLetter(c) && !used.contains(c) && c != 'J') {
@@ -454,14 +516,12 @@ public class DecryptionEngine {
             }
         }
         
-        
         for (char c = 'A'; c <= 'Z'; c++) {
             if (!used.contains(c) && c != 'J') {
                 alphabet.append(c);
                 used.add(c);
             }
         }
-        
         
         char[][] square = new char[5][5];
         int index = 0;
@@ -512,12 +572,12 @@ public class DecryptionEngine {
         }
         return -1;
     }
+    
     private String playfairDecrypt(String text, String key) {
         char[][] matrix = createPlayfairMatrix(key);
         
         StringBuilder result = new StringBuilder();
         
-        // İki harfli gruplar halinde deşifrele
         for (int i = 0; i < text.length(); i += 2) {
             char a = text.charAt(i);
             char b = text.charAt(i + 1);
@@ -526,15 +586,12 @@ public class DecryptionEngine {
             int[] posB = findPosition(matrix, b);
             
             if (posA[0] == posB[0]) {
-                // Aynı satırda
                 result.append(matrix[posA[0]][(posA[1] + 4) % 5]);
                 result.append(matrix[posB[0]][(posB[1] + 4) % 5]);
             } else if (posA[1] == posB[1]) {
-                // Aynı sütunda
                 result.append(matrix[(posA[0] + 4) % 5][posA[1]]);
                 result.append(matrix[(posB[0] + 4) % 5][posB[1]]);
             } else {
-                // Dikdörtgen
                 result.append(matrix[posA[0]][posB[1]]);
                 result.append(matrix[posB[0]][posA[1]]);
             }
@@ -543,7 +600,6 @@ public class DecryptionEngine {
         return result.toString();
     }
     
-    // Playfair matrisi oluştur
     private char[][] createPlayfairMatrix(String key) {
         char[][] matrix = new char[5][5];
         boolean[] used = new boolean[26];
@@ -551,7 +607,6 @@ public class DecryptionEngine {
         
         int row = 0, col = 0;
         
-        // Anahtar kelimeyi ekle
         if (key != null && !key.isEmpty()) {
             for (char c : key.toUpperCase().toCharArray()) {
                 if (!Character.isLetter(c)) continue;
@@ -570,7 +625,6 @@ public class DecryptionEngine {
             }
         }
         
-        // Kalan harfleri ekle
         for (char c = 'A'; c <= 'Z'; c++) {
             if (c == 'J') continue;
             int index = c - 'A';
@@ -588,7 +642,6 @@ public class DecryptionEngine {
         return matrix;
     }
     
-    // Matristeki pozisyonu bul
     private int[] findPosition(char[][] matrix, char c) {
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {

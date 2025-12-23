@@ -1,3 +1,4 @@
+package src.algorithms.symmetric;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.util.Base64;

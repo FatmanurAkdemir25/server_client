@@ -1,4 +1,10 @@
+package src.engine;
 import java.util.*;
+
+import src.algorithms.symmetric.AESAlgorithm;
+import src.algorithms.symmetric.AESLibrary;
+import src.algorithms.symmetric.DESAlgorithm;
+import src.algorithms.symmetric.DESLibrary;
 
 public class DecryptionEngine {
     
@@ -45,14 +51,32 @@ public class DecryptionEngine {
             return playfairDecrypt(encryptedText, key);
         }
         
-        // HİBRİT DEŞİFRELEME
-        else if (method.contains("DES") && method.contains("Manuel")) {
-            return hybridDESManualDecrypt(encryptedText);
-        } else if (method.contains("AES") && method.contains("Manuel")) {
-            return hybridAESManualDecrypt(encryptedText);
-        } else if (method.contains("DES") && method.contains("Java")) {
+        // MANUEL DES
+        if (method.equals("DES (Manuel Implementasyon)")) {
+            String[] parts = encryptedText.split("\\|");
+            if (parts.length >= 3 && parts[0].equals("MANUAL_DES")) {
+                String desKey = parts[1];
+                String encrypted = parts[2];
+                return des.decrypt(encrypted, desKey);
+            }
+            throw new Exception("Geçersiz manuel DES formatı!");
+        }
+        // MANUEL AES
+        else if (method.equals("AES (Manuel Implementasyon)")) {
+            String[] parts = encryptedText.split("\\|");
+            if (parts.length >= 3 && parts[0].equals("MANUAL_AES")) {
+                String aesKey = parts[1];
+                String encrypted = parts[2];
+                return aes.decrypt(encrypted, aesKey);
+            }
+            throw new Exception("Geçersiz manuel AES formatı!");
+        }
+        // KÜTÜPHANE DES
+        else if (method.equals("DES (Java Kütüphanesi)")) {
             return hybridDESLibraryDecrypt(encryptedText);
-        } else if (method.contains("AES") && method.contains("Java")) {
+        }
+        // KÜTÜPHANE AES
+        else if (method.equals("AES (Java Kütüphanesi)")) {
             return hybridAESLibraryDecrypt(encryptedText);
         }
         

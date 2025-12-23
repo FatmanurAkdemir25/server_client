@@ -1,0 +1,56 @@
+================================================================================
+TIMESTAMP: 2025-12-23 19:23:25
+METHOD: DES (Manuel Implementasyon)
+ORIGINAL SIZE: 5 bytes
+ENCRYPTED SIZE: 36 bytes
+ENCRYPTION TIME: 10 ms
+SIZE INCREASE: 620.0%
+
+================================================================================
+TIMESTAMP: 2025-12-23 19:23:52
+METHOD: AES (Manuel Implementasyon)
+ORIGINAL SIZE: 5 bytes
+ENCRYPTED SIZE: 60 bytes
+ENCRYPTION TIME: 0 ms
+SIZE INCREASE: 1100.0%
+
+================================================================================
+TIMESTAMP: 2025-12-23 19:24:06
+METHOD: DES (Java Kütüphanesi)
+ORIGINAL SIZE: 5 bytes
+ENCRYPTED SIZE: 493 bytes
+ENCRYPTION TIME: 156 ms
+SIZE INCREASE: 9760.0%
+
+================================================================================
+TIMESTAMP: 2025-12-23 19:24:20
+METHOD: AES (Java Kütüphanesi)
+ORIGINAL SIZE: 5 bytes
+ENCRYPTED SIZE: 511 bytes
+ENCRYPTION TIME: 23 ms
+SIZE INCREASE: 10120.0%
+
+================================================================================
+TIMESTAMP: 2025-12-23 19:28:03
+METHOD: AES (Manuel Implementasyon)
+ORIGINAL SIZE: 3 bytes
+ENCRYPTED SIZE: 60 bytes
+ENCRYPTION TIME: 0 ms
+SIZE INCREASE: 1900.0%
+
+================================================================================
+TIMESTAMP: 2025-12-23 19:28:21
+METHOD: AES (Manuel Implementasyon)
+ORIGINAL SIZE: 3 bytes
+ENCRYPTED SIZE: 60 bytes
+ENCRYPTION TIME: 0 ms
+SIZE INCREASE: 1900.0%
+
+================================================================================
+TIMESTAMP: 2025-12-23 19:32:43.805
+METHOD: DES (Manuel Implementasyon)
+ORIGINAL SIZE: 5 bytes
+ENCRYPTED SIZE: 36 bytes
+ENCRYPTION TIME: 4,249 ms
+SIZE INCREASE: 620,00%
+

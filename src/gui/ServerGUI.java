@@ -1,3 +1,8 @@
+package src.gui;
+
+import src.engine.DecryptionEngine;
+import src.network.CryptoServer;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -10,31 +15,31 @@ public class ServerGUI extends JFrame {
     private JTextArea encryptedTextArea;
     private JButton decryptButton;
     private CryptoServer server;
-    private DecryptionEngine decryptionEngine;  // DEĞİŞTİ
+    private DecryptionEngine decryptionEngine;
 
     public ServerGUI() {
         instance = this;
-        decryptionEngine = new DecryptionEngine();  // DEĞİŞTİ
+        decryptionEngine = new DecryptionEngine();
         initComponents();
         server = new CryptoServer(this);
         server.startServer();
     }
 
     private void initComponents() {
-
         setTitle("Sunucu - Mesaj Deşifreleme");
         setSize(850, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
         JButton clientTab = new JButton("İstemci (Şifreleme)");
         JButton serverTab = new JButton("Sunucu (Deşifreleme)");
+        JButton fileTab = new JButton("Dosya İşlemleri");
 
         clientTab.setBackground(Color.WHITE);
         serverTab.setBackground(new Color(76, 175, 80));
         serverTab.setForeground(Color.WHITE);
+        fileTab.setBackground(Color.WHITE);
 
         clientTab.addActionListener(e -> {
             if (ClientGUI.getInstance() != null && ClientGUI.getInstance().isVisible()) {
@@ -44,9 +49,22 @@ public class ServerGUI extends JFrame {
                 SwingUtilities.invokeLater(() -> new ClientGUI().setVisible(true));
             }
         });
+        
+        fileTab.addActionListener(e -> {
+            if (FileCryptoGUI.getInstance() != null && FileCryptoGUI.getInstance().isVisible()) {
+                FileCryptoGUI.getInstance().toFront();
+                FileCryptoGUI.getInstance().requestFocus();
+            } else {
+                SwingUtilities.invokeLater(() -> {
+                    FileCryptoGUI fileGUI = new FileCryptoGUI();
+                    fileGUI.setVisible(true);
+                });
+            }
+        });
 
         topPanel.add(clientTab);
         topPanel.add(serverTab);
+        topPanel.add(fileTab);
         add(topPanel, BorderLayout.NORTH);
 
         JPanel mainPanel = new JPanel();
@@ -98,7 +116,6 @@ public class ServerGUI extends JFrame {
         keyField.setFont(new Font("Arial", Font.PLAIN, 14));
         keyField.setMaximumSize(new Dimension(800, 40));
         keyField.setAlignmentX(Component.LEFT_ALIGNMENT);
-        keyField.setEditable(false);  // DES/AES için otomatik
         mainPanel.add(keyField);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
@@ -162,7 +179,6 @@ public class ServerGUI extends JFrame {
             return;
         }
 
-        // DES/AES için anahtar kontrolü yapma (hibrit sistemde otomatik)
         if (!method.contains("DES") && !method.contains("AES")) {
             if (!method.startsWith("Polybius") && !method.startsWith("Pigpen") && key.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Anahtar boş bırakılamaz!");

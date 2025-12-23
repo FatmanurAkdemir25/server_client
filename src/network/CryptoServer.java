@@ -1,6 +1,9 @@
+package src.network;
 import java.io.*;
 import java.net.*;
 import javax.swing.SwingUtilities;
+
+import src.gui.ServerGUI;
 
 public class CryptoServer {
     private ServerSocket serverSocket;

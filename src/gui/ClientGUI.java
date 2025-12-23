@@ -1,4 +1,11 @@
+package src.gui;
+
 import javax.swing.*;
+
+import src.utils.CryptoMetrics;
+import src.engine.EncryptionEngine;
+import src.network.CryptoClient;
+
 import java.awt.*;
 import java.io.IOException;
 
@@ -43,9 +50,24 @@ public class ClientGUI extends JFrame {
                 });
             }
         });
+        
+        JButton fileTab = new JButton("Dosya İşlemleri");
+        fileTab.setBackground(Color.WHITE);
+        fileTab.addActionListener(e -> {
+            if (FileCryptoGUI.getInstance() != null && FileCryptoGUI.getInstance().isVisible()) {
+                FileCryptoGUI.getInstance().toFront();
+                FileCryptoGUI.getInstance().requestFocus();
+            } else {
+                SwingUtilities.invokeLater(() -> {
+                    FileCryptoGUI fileGUI = new FileCryptoGUI();
+                    fileGUI.setVisible(true);
+                });
+            }
+        });
 
         topPanel.add(clientTab);
         topPanel.add(serverTab);
+        topPanel.add(fileTab);
         add(topPanel, BorderLayout.NORTH);
 
         JPanel mainPanel = new JPanel();
@@ -153,9 +175,21 @@ public class ClientGUI extends JFrame {
     private void updateKeyFieldHint() {
         String method = (String) methodCombo.getSelectedItem();
         
-        // DES/AES için yeni ipuçları
-        if (method.contains("DES") || method.contains("AES")) {
-            keyField.setToolTipText("RSA için: p,q (örn: 61,53) veya 'auto' yazın. RSA ile DES/AES anahtarı üretilecek");
+        // MANUEL DES/AES - Direkt anahtar girişi
+        if (method.equals("DES (Manuel Implementasyon)")) {
+            keyField.setToolTipText("8 karakter DES anahtarı girin (örn: ABCD1234)");
+            keyField.setText("");
+        } else if (method.equals("AES (Manuel Implementasyon)")) {
+            keyField.setToolTipText("16 karakter AES anahtarı girin (örn: ABCDEFGH12345678)");
+            keyField.setText("");
+        }
+        // KÜTÜPHANE DES/AES - RSA ile anahtar üretimi
+        else if (method.equals("DES (Java Kütüphanesi)")) {
+            keyField.setToolTipText("RSA için: p,q (örn: 61,53) veya 'auto' - RSA ile DES anahtarı üretilecek");
+            keyField.setText("auto");
+        } else if (method.equals("AES (Java Kütüphanesi)")) {
+            keyField.setToolTipText("RSA için: p,q (örn: 61,53) veya 'auto' - RSA ile AES anahtarı üretilecek");
+            keyField.setText("auto");
         }
         // Klasik yöntemler
         else if (method.startsWith("Caesar")) {
@@ -187,30 +221,63 @@ public class ClientGUI extends JFrame {
         String method = (String) methodCombo.getSelectedItem();
         String key = keyField.getText().trim();
         String message = messageArea.getText().trim();
-
-        if (method.startsWith("Polybius") && key.isEmpty()) key = "";
-        if (method.startsWith("Pigpen") && key.isEmpty()) key = "default";
-        
-        // DES/AES için varsayılan "auto"
-        if ((method.contains("DES") || method.contains("AES")) && key.isEmpty()) {
-            key = "auto";
-        }
-
-        if (message.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Lütfen mesaj girin!", "Uyarı", JOptionPane.WARNING_MESSAGE);
+    
+        // Anahtar kontrolü
+        if (method.equals("DES (Manuel Implementasyon)") && key.length() != 8) {
+            JOptionPane.showMessageDialog(this, 
+                "DES anahtarı tam 8 karakter olmalıdır!", 
+                "Hata", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
+        
+        if (method.equals("AES (Manuel Implementasyon)") && key.length() != 16) {
+            JOptionPane.showMessageDialog(this, 
+                "AES anahtarı tam 16 karakter olmalıdır!", 
+                "Hata", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        if (message.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Lütfen mesaj girin!", 
+                                         "Uyarı", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
         try {
+            // NANOSANİYE hassasiyetiyle ölç
+            long startTime = System.nanoTime();
             String encrypted = encryptionEngine.encrypt(method, key, message);
+            long endTime = System.nanoTime();
+            
+            // Nanosaniyeyi milisaniyeye çevir (3 ondalık basamak)
+            double durationMs = (endTime - startTime) / 1_000_000.0;
+            
             resultArea.setText(encrypted);
-
+    
+            // Metrikleri logla
+            CryptoMetrics.logEncryption(method, message, encrypted, durationMs);
+    
+            // Sunucuya gönder
             client.sendToServer(method, key, encrypted);
-
-            JOptionPane.showMessageDialog(this,
-                    "Şifreleme başarılı!\nRSA ile anahtar üretildi ve DES/AES ile şifrelendi.\nVeriler sunucuya gönderildi.",
+    
+            String infoMessage = String.format(
+                "Şifreleme başarılı!\n" +
+                "Orijinal Boyut: %d bytes\n" +
+                "Şifreli Boyut: %d bytes\n" +
+                "Süre: %.3f ms\n" +  // 3 ondalık basamak
+                "Veriler sunucuya gönderildi.",
+                message.length(), encrypted.length(), durationMs
+            );
+    
+            if (method.contains("Java Kütüphanesi")) {
+                infoMessage += "\n\nRSA ile anahtar üretildi ve " + 
+                              (method.contains("DES") ? "DES" : "AES") + 
+                              " ile şifrelendi.";
+            }
+    
+            JOptionPane.showMessageDialog(this, infoMessage,
                     "Başarılı", JOptionPane.INFORMATION_MESSAGE);
-
+    
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this,
                     "Sunucuya bağlanılamadı!",
@@ -218,6 +285,7 @@ public class ClientGUI extends JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Hata: " + e.getMessage(),
                     "Hata", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 

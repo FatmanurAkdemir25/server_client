@@ -1,9 +1,16 @@
+package src.engine;
 import java.util.*;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+
+import src.algorithms.asymmetric.RSAKeyGenerator;
+import src.algorithms.symmetric.AESAlgorithm;
+import src.algorithms.symmetric.AESLibrary;
+import src.algorithms.symmetric.DESAlgorithm;
+import src.algorithms.symmetric.DESLibrary;
+
 import java.security.*;
 import javax.crypto.Cipher;
-import java.util.Base64;
 
 public class EncryptionEngine {
     
@@ -51,14 +58,28 @@ public class EncryptionEngine {
             return playfairEncrypt(message, key);
         }
         
-        // HİBRİT ŞİFRELEME: RSA ile anahtar üret, DES/AES ile şifrele
-        else if (method.contains("DES") && method.contains("Manuel")) {
-            return hybridDESManual(message, key);
-        } else if (method.contains("AES") && method.contains("Manuel")) {
-            return hybridAESManual(message, key);
-        } else if (method.contains("DES") && method.contains("Java")) {
+        // MANUEL DES - Direkt anahtar kullan
+        if (method.equals("DES (Manuel Implementasyon)")) {
+            if (key.length() != 8) {
+                throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalıdır!");
+            }
+            String encrypted = des.encrypt(message, key);
+            return "MANUAL_DES|" + key + "|" + encrypted;
+        }
+        // MANUEL AES - Direkt anahtar kullan
+        else if (method.equals("AES (Manuel Implementasyon)")) {
+            if (key.length() != 16) {
+                throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalıdır!");
+            }
+            String encrypted = aes.encrypt(message, key);
+            return "MANUAL_AES|" + key + "|" + encrypted;
+        }
+        // KÜTÜPHANE DES - RSA ile anahtar üret
+        else if (method.equals("DES (Java Kütüphanesi)")) {
             return hybridDESLibrary(message, key);
-        } else if (method.contains("AES") && method.contains("Java")) {
+        }
+        // KÜTÜPHANE AES - RSA ile anahtar üret
+        else if (method.equals("AES (Java Kütüphanesi)")) {
             return hybridAESLibrary(message, key);
         }
         

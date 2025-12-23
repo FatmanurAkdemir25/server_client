@@ -1,3 +1,4 @@
+package src.algorithms.symmetric;
 public class AESAlgorithm {
     
     private static final int[] SBOX = {

@@ -2,9 +2,11 @@ package src.gui;
 
 import src.engine.DecryptionEngine;
 import src.network.CryptoServer;
+import src.engine.FileEncryptionHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 public class ServerGUI extends JFrame {
 
@@ -14,32 +16,41 @@ public class ServerGUI extends JFrame {
     private JTextField keyField;
     private JTextArea encryptedTextArea;
     private JButton decryptButton;
+    private JButton saveFileButton;
+    private JButton openFileButton;
     private CryptoServer server;
     private DecryptionEngine decryptionEngine;
+    private FileEncryptionHandler fileHandler;
+    
+    
+    private String receivedFileName;
+    private String receivedFileContent;
+    private boolean isFileMode = false;
+    private File lastDecryptedFile = null;
 
     public ServerGUI() {
         instance = this;
         decryptionEngine = new DecryptionEngine();
+        fileHandler = new FileEncryptionHandler();
         initComponents();
         server = new CryptoServer(this);
         server.startServer();
     }
 
     private void initComponents() {
-        setTitle("Sunucu - Mesaj Deşifreleme");
+        setTitle("Sunucu - Mesaj ve Dosya Deşifreleme");
         setSize(850, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
+        
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton clientTab = new JButton("İstemci (Şifreleme)");
         JButton serverTab = new JButton("Sunucu (Deşifreleme)");
-        JButton fileTab = new JButton("Dosya İşlemleri");
 
         clientTab.setBackground(Color.WHITE);
         serverTab.setBackground(new Color(76, 175, 80));
         serverTab.setForeground(Color.WHITE);
-        fileTab.setBackground(Color.WHITE);
 
         clientTab.addActionListener(e -> {
             if (ClientGUI.getInstance() != null && ClientGUI.getInstance().isVisible()) {
@@ -49,29 +60,16 @@ public class ServerGUI extends JFrame {
                 SwingUtilities.invokeLater(() -> new ClientGUI().setVisible(true));
             }
         });
-        
-        fileTab.addActionListener(e -> {
-            if (FileCryptoGUI.getInstance() != null && FileCryptoGUI.getInstance().isVisible()) {
-                FileCryptoGUI.getInstance().toFront();
-                FileCryptoGUI.getInstance().requestFocus();
-            } else {
-                SwingUtilities.invokeLater(() -> {
-                    FileCryptoGUI fileGUI = new FileCryptoGUI();
-                    fileGUI.setVisible(true);
-                });
-            }
-        });
 
         topPanel.add(clientTab);
         topPanel.add(serverTab);
-        topPanel.add(fileTab);
         add(topPanel, BorderLayout.NORTH);
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel titleLabel = new JLabel("Sunucu - Mesaj Deşifreleme");
+        JLabel titleLabel = new JLabel("Sunucu - Mesaj ve Dosya Deşifreleme");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(new Color(76, 175, 80));
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -96,17 +94,17 @@ public class ServerGUI extends JFrame {
                 "Pigpen Cipher (Domuz Ağılı)",
                 "Hill Cipher (Matris Şifreleme)",
                 "Playfair Cipher",
-                "DES (Manuel Implementasyon)",
-                "AES (Manuel Implementasyon)",
-                "DES (Java Kütüphanesi)",
-                "AES (Java Kütüphanesi)"
+                "DES (Manuel - Direkt Anahtar)",
+                "AES (Manuel - Direkt Anahtar)",
+                "DES (Kütüphane - RSA ile Anahtar)",
+                "AES (Kütüphane - RSA ile Anahtar)"
         });
         methodCombo.setMaximumSize(new Dimension(800, 40));
         methodCombo.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(methodCombo);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        JLabel keyLabel = new JLabel("Anahtar (DES/AES için otomatik çözülür)");
+        JLabel keyLabel = new JLabel("Anahtar");
         keyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         keyLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(keyLabel);
@@ -119,7 +117,7 @@ public class ServerGUI extends JFrame {
         mainPanel.add(keyField);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        JLabel encLabel = new JLabel("Şifreli Mesaj");
+        JLabel encLabel = new JLabel("Şifreli Mesaj / Dosya");
         encLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         encLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(encLabel);
@@ -135,14 +133,37 @@ public class ServerGUI extends JFrame {
         mainPanel.add(encScrollPane);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        decryptButton = new JButton("Deşifrele");
+        decryptButton = new JButton("Mesajı Deşifrele");
         decryptButton.setBackground(new Color(76, 175, 80));
         decryptButton.setForeground(Color.WHITE);
         decryptButton.setFont(new Font("Arial", Font.BOLD, 16));
-        decryptButton.setMaximumSize(new Dimension(800, 50));
-        decryptButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        decryptButton.setPreferredSize(new Dimension(200, 50));
         decryptButton.addActionListener(e -> performDecryption());
-        mainPanel.add(decryptButton);
+        
+        saveFileButton = new JButton("Dosyayı Kaydet");
+        saveFileButton.setBackground(new Color(255, 152, 0));
+        saveFileButton.setForeground(Color.WHITE);
+        saveFileButton.setFont(new Font("Arial", Font.BOLD, 16));
+        saveFileButton.setPreferredSize(new Dimension(200, 50));
+        saveFileButton.setEnabled(false);
+        saveFileButton.addActionListener(e -> saveDecryptedFile());
+        
+        openFileButton = new JButton("Dosyayı Aç");
+        openFileButton.setBackground(new Color(33, 150, 243));
+        openFileButton.setForeground(Color.WHITE);
+        openFileButton.setFont(new Font("Arial", Font.BOLD, 16));
+        openFileButton.setPreferredSize(new Dimension(200, 50));
+        openFileButton.setEnabled(false);
+        openFileButton.addActionListener(e -> openDecryptedFile());
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        buttonPanel.setMaximumSize(new Dimension(800, 60));
+        buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonPanel.add(decryptButton);
+        buttonPanel.add(saveFileButton);
+        buttonPanel.add(openFileButton);
+        
+        mainPanel.add(buttonPanel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
         JLabel logLabel = new JLabel("Sunucu Log:");
@@ -164,9 +185,26 @@ public class ServerGUI extends JFrame {
     }
 
     public void setReceivedData(String method, String key, String encryptedMessage) {
+        isFileMode = false;
+        saveFileButton.setEnabled(false);
+        openFileButton.setEnabled(false);
         methodCombo.setSelectedItem(method);
         keyField.setText(key);
         encryptedTextArea.setText(encryptedMessage);
+    }
+    
+    public void setReceivedFileData(String method, String key, String fileName, String encryptedContent) {
+        isFileMode = true;
+        receivedFileName = fileName;
+        receivedFileContent = encryptedContent;
+        saveFileButton.setEnabled(true);
+        
+        methodCombo.setSelectedItem(method);
+        keyField.setText(key);
+        encryptedTextArea.setText("[DOSYA ALINDI] " + fileName + "\n\n" + 
+            "İçerik Boyutu: " + encryptedContent.length() + " bytes\n\n" +
+            "Önizleme (ilk 200 karakter):\n" +
+            encryptedContent.substring(0, Math.min(200, encryptedContent.length())) + "...");
     }
 
     private void performDecryption() {
@@ -176,6 +214,13 @@ public class ServerGUI extends JFrame {
 
         if (encryptedText.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Lütfen şifreli mesaj girin!");
+            return;
+        }
+        
+        if (isFileMode) {
+            JOptionPane.showMessageDialog(this, 
+                "Bu bir dosya! Deşifrelemek için 'Dosyayı Kaydet' butonunu kullanın.",
+                "Bilgi", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
@@ -200,6 +245,85 @@ public class ServerGUI extends JFrame {
             JOptionPane.showMessageDialog(this,
                     "Deşifreleme hatası: " + ex.getMessage(),
                     "Hata", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void saveDecryptedFile() {
+        if (!isFileMode || receivedFileContent == null) {
+            JOptionPane.showMessageDialog(this, "Kaydedilecek dosya yok!");
+            return;
+        }
+        
+        try {
+            File tempEncrypted = File.createTempFile("encrypted_", ".tmp");
+            java.nio.file.Files.write(tempEncrypted.toPath(), receivedFileContent.getBytes("UTF-8"));
+            
+            JFileChooser saveChooser = new JFileChooser();
+            String suggestedName = receivedFileName.replace(".encrypted", "");
+            saveChooser.setSelectedFile(new File("decrypted_" + suggestedName));
+            
+            int result = saveChooser.showSaveDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File outputFile = saveChooser.getSelectedFile();
+                
+                FileEncryptionHandler.DecryptionInfo info = 
+                    fileHandler.decryptFile(tempEncrypted, outputFile);
+                
+                log("=== DOSYA DEŞİFRELENDİ ===");
+                log("Dosya: " + outputFile.getName());
+                log("Yöntem: " + info.method);
+                log("Boyut: " + info.fileSize + " bytes");
+                
+                lastDecryptedFile = outputFile;
+                openFileButton.setEnabled(true);
+                
+                int choice = JOptionPane.showConfirmDialog(this,
+                    "Dosya başarıyla deşifrelendi!\n\n" + 
+                    "Dosya: " + outputFile.getName() + "\n" +
+                    "Konum: " + outputFile.getAbsolutePath() + "\n\n" +
+                    "Dosyayı şimdi açmak ister misiniz?",
+                    "Başarılı", 
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE);
+                
+                if (choice == JOptionPane.YES_OPTION) {
+                    openFile(outputFile);
+                }
+                
+                tempEncrypted.delete();
+            }
+            
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                "Dosya kaydetme hatası: " + ex.getMessage(),
+                "Hata", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+    
+    private void openDecryptedFile() {
+        if (lastDecryptedFile == null || !lastDecryptedFile.exists()) {
+            JOptionPane.showMessageDialog(this, 
+                "Açılacak dosya bulunamadı!",
+                "Hata", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        openFile(lastDecryptedFile);
+    }
+    
+    private void openFile(File file) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.OPEN)) {
+                    desktop.open(file);
+                    log("Dosya açıldı: " + file.getName());
+                }
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                "Dosya konumu:\n" + file.getAbsolutePath(),
+                "Bilgi", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

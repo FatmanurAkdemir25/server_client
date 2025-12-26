@@ -1,12 +1,13 @@
 package src.gui;
 
-import javax.swing.*;
-
-import src.utils.CryptoMetrics;
 import src.engine.EncryptionEngine;
+import src.engine.FileEncryptionHandler;
 import src.network.CryptoClient;
+import src.utils.CryptoMetrics;
 
+import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 
 public class ClientGUI extends JFrame {
@@ -17,24 +18,34 @@ public class ClientGUI extends JFrame {
     private JButton encryptButton;
     private JTextArea resultArea;
     private CryptoClient client;
-    private EncryptionEngine encryptionEngine;  // DEĞİŞTİ
+    private EncryptionEngine encryptionEngine;
+    private FileEncryptionHandler fileHandler;
+    
+    
+    private boolean isFileMode = false;
+    private File selectedFile = null;
+    private JPanel filePanel;
+    private JTextField filePathField;
 
     public ClientGUI() {
         instance = this;
         client = new CryptoClient();
-        encryptionEngine = new EncryptionEngine();  // DEĞİŞTİ
+        encryptionEngine = new EncryptionEngine();
+        fileHandler = new FileEncryptionHandler();
         initComponents();
     }
 
     private void initComponents() {
-        setTitle("İstemci - Mesaj Şifreleme");
-        setSize(850, 700);
+        setTitle("İstemci - Mesaj ve Dosya Şifreleme");
+        setSize(850, 750);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
+        
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton clientTab = new JButton("İstemci (Şifreleme)");
         JButton serverTab = new JButton("Sunucu (Deşifreleme)");
+        
         clientTab.setBackground(new Color(33, 150, 243));
         clientTab.setForeground(Color.WHITE);
         serverTab.setBackground(Color.WHITE);
@@ -44,30 +55,12 @@ public class ClientGUI extends JFrame {
                 ServerGUI.getInstance().toFront();
                 ServerGUI.getInstance().requestFocus();
             } else {
-                SwingUtilities.invokeLater(() -> {
-                    ServerGUI server = new ServerGUI();
-                    server.setVisible(true);
-                });
-            }
-        });
-        
-        JButton fileTab = new JButton("Dosya İşlemleri");
-        fileTab.setBackground(Color.WHITE);
-        fileTab.addActionListener(e -> {
-            if (FileCryptoGUI.getInstance() != null && FileCryptoGUI.getInstance().isVisible()) {
-                FileCryptoGUI.getInstance().toFront();
-                FileCryptoGUI.getInstance().requestFocus();
-            } else {
-                SwingUtilities.invokeLater(() -> {
-                    FileCryptoGUI fileGUI = new FileCryptoGUI();
-                    fileGUI.setVisible(true);
-                });
+                SwingUtilities.invokeLater(() -> new ServerGUI().setVisible(true));
             }
         });
 
         topPanel.add(clientTab);
         topPanel.add(serverTab);
-        topPanel.add(fileTab);
         add(topPanel, BorderLayout.NORTH);
 
         JPanel mainPanel = new JPanel();
@@ -75,7 +68,7 @@ public class ClientGUI extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         mainPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel titleLabel = new JLabel("İstemci - Mesaj Şifreleme");
+        JLabel titleLabel = new JLabel("İstemci - Mesaj ve Dosya Şifreleme");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(new Color(33, 150, 243));
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -100,10 +93,10 @@ public class ClientGUI extends JFrame {
                 "Pigpen Cipher (Domuz Ağılı)",
                 "Hill Cipher (Matris Şifreleme)",
                 "Playfair Cipher",
-                "DES (Manuel Implementasyon)",
-                "AES (Manuel Implementasyon)",
-                "DES (Java Kütüphanesi)",
-                "AES (Java Kütüphanesi)"
+                "DES (Manuel - Direkt Anahtar)",
+                "AES (Manuel - Direkt Anahtar)",
+                "DES (Kütüphane - RSA ile Anahtar)",
+                "AES (Kütüphane - RSA ile Anahtar)"
         });
         methodCombo.setMaximumSize(new Dimension(800, 40));
         methodCombo.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -111,36 +104,121 @@ public class ClientGUI extends JFrame {
         mainPanel.add(methodCombo);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        JLabel keyLabel = new JLabel("Anahtar (RSA Parametreleri)");
+        JLabel keyLabel = new JLabel("Anahtar");
         keyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         keyLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(keyLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
+        JPanel keyPanel = new JPanel();
+        keyPanel.setLayout(new BoxLayout(keyPanel, BoxLayout.X_AXIS));
+        keyPanel.setMaximumSize(new Dimension(800, 40));
+        keyPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
         keyField = new JTextField();
         keyField.setFont(new Font("Arial", Font.PLAIN, 14));
-        keyField.setMaximumSize(new Dimension(800, 40));
-        keyField.setAlignmentX(Component.LEFT_ALIGNMENT);
-        mainPanel.add(keyField);
+        
+        JButton keyHelperButton = new JButton("💡");
+        keyHelperButton.setToolTipText("Anahtar örnekleri");
+        keyHelperButton.setPreferredSize(new Dimension(50, 40));
+        keyHelperButton.addActionListener(e -> {
+            String method = (String) methodCombo.getSelectedItem();
+            KeyHelperDialog helper = new KeyHelperDialog(this, method, keyField);
+            helper.setVisible(true);
+        });
+        
+        keyPanel.add(keyField);
+        keyPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        keyPanel.add(keyHelperButton);
+        
+        mainPanel.add(keyPanel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        JLabel messageLabel = new JLabel("Mesaj");
+        JLabel messageLabel = new JLabel("Mesaj veya Dosya");
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         messageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(messageLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        messageArea = new JTextArea(5, 40);
+        
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setMaximumSize(new Dimension(800, 180));
+        inputPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        inputPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        
+        
+        JPanel tabPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        JButton messageTabBtn = new JButton("Metin Mesaj");
+        JButton fileTabBtn = new JButton("Dosya Seç");
+        
+        messageTabBtn.setBackground(new Color(33, 150, 243));
+        messageTabBtn.setForeground(Color.WHITE);
+        fileTabBtn.setBackground(Color.LIGHT_GRAY);
+        
+        
+        messageArea = new JTextArea(6, 40);
         messageArea.setFont(new Font("Arial", Font.PLAIN, 14));
         messageArea.setLineWrap(true);
         messageArea.setWrapStyleWord(true);
         JScrollPane msgScrollPane = new JScrollPane(messageArea);
-        msgScrollPane.setMaximumSize(new Dimension(800, 120));
-        msgScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
-        mainPanel.add(msgScrollPane);
+        msgScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        
+        
+        filePanel = new JPanel(new BorderLayout(10, 10));
+        filePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        filePanel.setVisible(false);
+        
+        filePathField = new JTextField();
+        filePathField.setEditable(false);
+        JButton selectFileBtn = new JButton("Dosya Seç");
+        
+        selectFileBtn.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                selectedFile = chooser.getSelectedFile();
+                filePathField.setText(selectedFile.getAbsolutePath());
+                isFileMode = true;
+            }
+        });
+        
+        filePanel.add(new JLabel("Seçili Dosya:"), BorderLayout.NORTH);
+        filePanel.add(filePathField, BorderLayout.CENTER);
+        filePanel.add(selectFileBtn, BorderLayout.EAST);
+        
+        
+        messageTabBtn.addActionListener(e -> {
+            messageTabBtn.setBackground(new Color(33, 150, 243));
+            messageTabBtn.setForeground(Color.WHITE);
+            fileTabBtn.setBackground(Color.LIGHT_GRAY);
+            fileTabBtn.setForeground(Color.BLACK);
+            msgScrollPane.setVisible(true);
+            filePanel.setVisible(false);
+            isFileMode = false;
+            selectedFile = null;
+        });
+        
+        fileTabBtn.addActionListener(e -> {
+            messageTabBtn.setBackground(Color.LIGHT_GRAY);
+            messageTabBtn.setForeground(Color.BLACK);
+            fileTabBtn.setBackground(new Color(33, 150, 243));
+            fileTabBtn.setForeground(Color.WHITE);
+            msgScrollPane.setVisible(false);
+            filePanel.setVisible(true);
+            isFileMode = true;
+        });
+        
+        tabPanel.add(messageTabBtn);
+        tabPanel.add(fileTabBtn);
+        
+        inputPanel.add(tabPanel);
+        inputPanel.add(msgScrollPane);
+        inputPanel.add(filePanel);
+        
+        mainPanel.add(inputPanel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        encryptButton = new JButton("Şifrele");
+        encryptButton = new JButton("Şifrele ve Sunucuya Gönder");
         encryptButton.setBackground(new Color(33, 150, 243));
         encryptButton.setForeground(Color.WHITE);
         encryptButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -150,7 +228,7 @@ public class ClientGUI extends JFrame {
         mainPanel.add(encryptButton);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        JLabel resultLabel = new JLabel("Şifrelenmiş Mesaj:");
+        JLabel resultLabel = new JLabel("Sonuç:");
         resultLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         resultLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(resultLabel);
@@ -158,7 +236,7 @@ public class ClientGUI extends JFrame {
 
         resultArea = new JTextArea(6, 40);
         resultArea.setEditable(false);
-        resultArea.setFont(new Font("Courier New", Font.BOLD, 14));
+        resultArea.setFont(new Font("Courier New", Font.PLAIN, 12));
         resultArea.setBackground(new Color(240, 240, 240));
         resultArea.setLineWrap(true);
         resultArea.setWrapStyleWord(true);
@@ -168,6 +246,7 @@ public class ClientGUI extends JFrame {
         mainPanel.add(resultScrollPane);
 
         add(mainPanel, BorderLayout.CENTER);
+        setLocationRelativeTo(null);
 
         updateKeyFieldHint();
     }
@@ -175,120 +254,170 @@ public class ClientGUI extends JFrame {
     private void updateKeyFieldHint() {
         String method = (String) methodCombo.getSelectedItem();
         
-        // MANUEL DES/AES - Direkt anahtar girişi
-        if (method.equals("DES (Manuel Implementasyon)")) {
-            keyField.setToolTipText("8 karakter DES anahtarı girin (örn: ABCD1234)");
-            keyField.setText("");
-        } else if (method.equals("AES (Manuel Implementasyon)")) {
-            keyField.setToolTipText("16 karakter AES anahtarı girin (örn: ABCDEFGH12345678)");
-            keyField.setText("");
-        }
-        // KÜTÜPHANE DES/AES - RSA ile anahtar üretimi
-        else if (method.equals("DES (Java Kütüphanesi)")) {
-            keyField.setToolTipText("RSA için: p,q (örn: 61,53) veya 'auto' - RSA ile DES anahtarı üretilecek");
-            keyField.setText("auto");
-        } else if (method.equals("AES (Java Kütüphanesi)")) {
-            keyField.setToolTipText("RSA için: p,q (örn: 61,53) veya 'auto' - RSA ile AES anahtarı üretilecek");
-            keyField.setText("auto");
-        }
-        // Klasik yöntemler
-        else if (method.startsWith("Caesar")) {
-            keyField.setToolTipText("Örnek: 3 (1-25)");
+        if (method.contains("Manuel")) {
+            if (method.contains("DES")) {
+                keyField.setToolTipText("8 karakter DES anahtarı (örn: secret12)");
+            } else if (method.contains("AES")) {
+                keyField.setToolTipText("16 karakter AES anahtarı (örn: mysecretkey12345)");
+            }
+        } else if (method.contains("Kütüphane")) {
+            keyField.setToolTipText("RSA parametreleri: 'auto' veya 'p,q' (örn: 61,53)");
+        } else if (method.startsWith("Caesar")) {
+            keyField.setToolTipText("Kaydırma sayısı (örn: 3)");
         } else if (method.startsWith("Vigenere")) {
-            keyField.setToolTipText("Örnek: ANAHTAR");
-        } else if (method.startsWith("Substitution")) {
-            keyField.setToolTipText("26 harf dizilimi");
-        } else if (method.startsWith("Affine")) {
-            keyField.setToolTipText("Örnek: 5,8 (a,b)");
-        } else if (method.startsWith("Rail Fence")) {
-            keyField.setToolTipText("Örnek: 3");
-        } else if (method.startsWith("Route")) {
-            keyField.setToolTipText("Örnek: 5,clockwise");
-        } else if (method.startsWith("Columnar")) {
-            keyField.setToolTipText("Örnek: KEY");
-        } else if (method.startsWith("Polybius")) {
-            keyField.setToolTipText("Anahtar opsiyonel");
-        } else if (method.startsWith("Pigpen")) {
-            keyField.setToolTipText("default yazın");
-        } else if (method.startsWith("Hill")) {
-            keyField.setToolTipText("Örnek: 3,3,2,5 (matris)");
-        } else if (method.startsWith("Playfair")) {
-            keyField.setToolTipText("Anahtar kelime");
+            keyField.setToolTipText("Anahtar kelime (örn: SECRET)");
         }
     }
 
     private void performEncryption() {
         String method = (String) methodCombo.getSelectedItem();
         String key = keyField.getText().trim();
-        String message = messageArea.getText().trim();
-    
-        // Anahtar kontrolü
-        if (method.equals("DES (Manuel Implementasyon)") && key.length() != 8) {
-            JOptionPane.showMessageDialog(this, 
-                "DES anahtarı tam 8 karakter olmalıdır!", 
-                "Hata", JOptionPane.ERROR_MESSAGE);
-            return;
+
+        
+        if (method.startsWith("Polybius") && key.isEmpty()) key = "";
+        if (method.startsWith("Pigpen") && key.isEmpty()) key = "default";
+        if (method.contains("Kütüphane") && key.isEmpty()) key = "auto";
+        
+        
+        if (isFileMode && method.contains("Manuel")) {
+            if (method.contains("DES") && key.length() != 8) {
+                JOptionPane.showMessageDialog(this, 
+                    "Manuel DES için tam 8 karakterlik anahtar gerekli!\nÖrnek: secret12", 
+                    "Uyarı", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (method.contains("AES") && key.length() != 16) {
+                JOptionPane.showMessageDialog(this, 
+                    "Manuel AES için tam 16 karakterlik anahtar gerekli!\nÖrnek: mysecretkey12345", 
+                    "Uyarı", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
         }
         
-        if (method.equals("AES (Manuel Implementasyon)") && key.length() != 16) {
-            JOptionPane.showMessageDialog(this, 
-                "AES anahtarı tam 16 karakter olmalıdır!", 
-                "Hata", JOptionPane.ERROR_MESSAGE);
-            return;
+        if (isFileMode) {
+            performFileEncryption(method, key);
+        } else {
+            performMessageEncryption(method, key);
         }
+    }
     
+    private void performMessageEncryption(String method, String key) {
+        String message = messageArea.getText().trim();
+        
         if (message.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Lütfen mesaj girin!", 
-                                         "Uyarı", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, 
+                "Lütfen mesaj girin!", 
+                "Uyarı", JOptionPane.WARNING_MESSAGE);
             return;
         }
-    
+
         try {
-            // NANOSANİYE hassasiyetiyle ölç
             long startTime = System.nanoTime();
             String encrypted = encryptionEngine.encrypt(method, key, message);
             long endTime = System.nanoTime();
-            
-            // Nanosaniyeyi milisaniyeye çevir (3 ondalık basamak)
             double durationMs = (endTime - startTime) / 1_000_000.0;
             
-            resultArea.setText(encrypted);
-    
-            // Metrikleri logla
+            resultArea.setText("=== MESAJ ŞİFRELENDİ ===\n\n" +
+                "Şifreli: " + encrypted.substring(0, Math.min(100, encrypted.length())) + "...\n\n" +
+                "Orijinal: " + message.length() + " bytes\n" +
+                "Şifreli: " + encrypted.length() + " bytes\n" +
+                "Süre: " + String.format("%.3f", durationMs) + " ms");
+
+            
             CryptoMetrics.logEncryption(method, message, encrypted, durationMs);
-    
-            // Sunucuya gönder
+            
+            
             client.sendToServer(method, key, encrypted);
-    
-            String infoMessage = String.format(
-                "Şifreleme başarılı!\n" +
-                "Orijinal Boyut: %d bytes\n" +
-                "Şifreli Boyut: %d bytes\n" +
-                "Süre: %.3f ms\n" +  // 3 ondalık basamak
-                "Veriler sunucuya gönderildi.",
-                message.length(), encrypted.length(), durationMs
-            );
-    
-            if (method.contains("Java Kütüphanesi")) {
-                infoMessage += "\n\nRSA ile anahtar üretildi ve " + 
-                              (method.contains("DES") ? "DES" : "AES") + 
-                              " ile şifrelendi.";
-            }
-    
-            JOptionPane.showMessageDialog(this, infoMessage,
-                    "Başarılı", JOptionPane.INFORMATION_MESSAGE);
-    
+
+            JOptionPane.showMessageDialog(this, 
+                "Mesaj şifrelendi ve sunucuya gönderildi!\n\n" +
+                "Sunucu ekranında deşifre edebilirsiniz.",
+                "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Sunucuya bağlanılamadı!",
-                    "Bağlantı Hatası", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, 
+                "Sunucuya bağlanılamadı!\n" + e.getMessage(), 
+                "Bağlantı Hatası", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Hata: " + e.getMessage(),
-                    "Hata", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, 
+                "Şifreleme hatası: " + e.getMessage(), 
+                "Hata", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+    
+    private void performFileEncryption(String method, String key) {
+        if (selectedFile == null || !selectedFile.exists()) {
+            JOptionPane.showMessageDialog(this, 
+                "Lütfen geçerli bir dosya seçin!", 
+                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        try {
+            resultArea.setText("Dosya şifreleniyor...\n" + selectedFile.getName());
+            
+            
+            File tempInput = File.createTempFile("input_", ".tmp");
+            File tempOutput = File.createTempFile("encrypted_", ".tmp");
+            
+            
+            java.nio.file.Files.copy(selectedFile.toPath(), tempInput.toPath(), 
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            
+            
+            String rsaParams = method.contains("Manuel") ? "auto" : (key.isEmpty() ? "auto" : key);
+            
+        
+            FileEncryptionHandler.EncryptionInfo info = 
+                fileHandler.encryptFile(tempInput, tempOutput, method, rsaParams);
+            
+            
+            byte[] encryptedBytes = java.nio.file.Files.readAllBytes(tempOutput.toPath());
+            String encryptedContent = new String(encryptedBytes, "UTF-8");
+            
+            resultArea.setText("Sunucuya gönderiliyor...");
+            
+            
+            String keyToSend = method.contains("Manuel") ? key : info.symmetricKey;
+            
+            client.sendFileToServer(method, keyToSend, 
+                selectedFile.getName() + ".encrypted", encryptedContent);
+            
+            resultArea.setText(
+                "=== DOSYA ŞİFRELENDİ VE GÖNDERİLDİ ===\n\n" +
+                "Dosya: " + selectedFile.getName() + "\n" +
+                "Yöntem: " + info.method + "\n" +
+                "Anahtar: " + keyToSend + "\n" +
+                "Orijinal: " + selectedFile.length() + " bytes\n" +
+                "Şifreli: " + encryptedContent.length() + " bytes\n\n" +
+                "Sunucuya gönderildi!");
+            
+            JOptionPane.showMessageDialog(this,
+                "Dosya başarıyla şifrelendi ve sunucuya gönderildi!\n\n" +
+                "Dosya: " + selectedFile.getName() + "\n" +
+                "Yöntem: " + info.method + "\n" +
+                "Anahtar: " + keyToSend + "\n\n" +
+                "Sunucu ekranında:\n" +
+                "1. 'Dosyayı Kaydet' butonuna tıklayın\n" +
+                "2. Dosyayı kaydedin ve deşifreleyin\n" +
+                "3. 'Dosyayı Aç' ile görüntüleyin",
+                "Başarılı", 
+                JOptionPane.INFORMATION_MESSAGE);
+            
+            
+            tempInput.delete();
+            tempOutput.delete();
+            
+        } catch (Exception e) {
+            resultArea.setText("❌ HATA: " + e.getMessage());
+            e.printStackTrace();
+            
+            JOptionPane.showMessageDialog(this, 
+                "Dosya şifreleme/gönderme hatası:\n\n" + e.getMessage(),
+                "Hata", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
     public static ClientGUI getInstance() {
         return instance;
     }

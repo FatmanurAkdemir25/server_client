@@ -20,7 +20,7 @@ public class CryptoMetrics {
             pw.println("METHOD: " + method);
             pw.println("ORIGINAL SIZE: " + originalMessage.length() + " bytes");
             pw.println("ENCRYPTED SIZE: " + encryptedMessage.length() + " bytes");
-            pw.printf("ENCRYPTION TIME: %.3f ms%n", timeMs);  // 3 ondalık
+            pw.printf("ENCRYPTION TIME: %.3f ms%n", timeMs);
             pw.printf("SIZE INCREASE: %.2f%%%n", 
                       ((encryptedMessage.length() - originalMessage.length()) * 100.0 / 
                        originalMessage.length()));

@@ -1,16 +1,11 @@
 package src.engine;
 import java.util.*;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 
-import src.algorithms.asymmetric.RSAKeyGenerator;
 import src.algorithms.symmetric.AESAlgorithm;
 import src.algorithms.symmetric.AESLibrary;
 import src.algorithms.symmetric.DESAlgorithm;
 import src.algorithms.symmetric.DESLibrary;
-
-import java.security.*;
-import javax.crypto.Cipher;
+import src.algorithms.asymmetric.RSAKeyGenerator;
 
 public class EncryptionEngine {
     
@@ -20,157 +15,98 @@ public class EncryptionEngine {
     private AESLibrary aesLib = new AESLibrary();
     private RSAKeyGenerator rsaKeyGen = new RSAKeyGenerator();
     
-    public String encrypt(String method, String key, String message) throws Exception {
-        System.out.println("\n=== HYBRID ENCRYPTION DEBUG ===");
+    public String encrypt(String method, String key, String plainText) throws Exception {
+        System.out.println("\n=== ENCRYPTION DEBUG ===");
         System.out.println("Method: " + method);
         System.out.println("Key: " + key);
-        System.out.println("Message: " + message);
-
-        // Klasik şifreleme metodları
+        System.out.println("Plain Text Length: " + plainText.length());
+        
+        
         if (method.startsWith("Caesar")) {
-            return caesarEncrypt(message, Integer.parseInt(key));
+            return caesarEncrypt(plainText, Integer.parseInt(key));
         } else if (method.startsWith("Vigenere")) {
-            return vigenereEncrypt(message, key);
+            return vigenereEncrypt(plainText, key);
         } else if (method.startsWith("Substitution")) {
-            return substitutionEncrypt(message, key);
+            return substitutionEncrypt(plainText, key);
         } else if (method.startsWith("Affine")) {
             String[] parts = key.split(",");
-            return affineEncrypt(message, Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim()));
+            return affineEncrypt(plainText, Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim()));
         } else if (method.startsWith("Rail Fence")) {
-            return railFenceEncrypt(message, Integer.parseInt(key));
+            return railFenceEncrypt(plainText, Integer.parseInt(key));
         } else if (method.startsWith("Route")) {
             String[] parts = key.split(",");
             int cols = Integer.parseInt(parts[0].trim());
             String direction = parts.length > 1 ? parts[1].trim() : "clockwise";
-            return routeCipherEncrypt(message, cols, direction);
+            return routeCipherEncrypt(plainText, cols, direction);
         } else if (method.startsWith("Columnar")) {
-            return columnarTranspositionEncrypt(message, key);
+            return columnarTranspositionEncrypt(plainText, key);
         } else if (method.startsWith("Polybius")) {
-            return polybiusEncrypt(message, key);
+            return polybiusEncrypt(plainText, key);
         } else if (method.startsWith("Pigpen")) {
-            return pigpenEncrypt(message);
+            return pigpenEncrypt(plainText);
         } else if (method.startsWith("Hill")) {
             String[] parts = key.split(",");
             int[][] keyMatrix = {{Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim())},
                                  {Integer.parseInt(parts[2].trim()), Integer.parseInt(parts[3].trim())}};
-            return hillEncrypt(message, keyMatrix);
+            return hillEncrypt(plainText, keyMatrix);
         } else if (method.startsWith("Playfair")) {
-            return playfairEncrypt(message, key);
+            return playfairEncrypt(plainText, key);
         }
         
-        // MANUEL DES - Direkt anahtar kullan
-        if (method.equals("DES (Manuel Implementasyon)")) {
+        
+        if (method.equals("DES (Manuel - Direkt Anahtar)")) {
+            System.out.println(">>> MANUAL DES ENCRYPTION");
             if (key.length() != 8) {
-                throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalıdır!");
+                throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı!");
             }
-            String encrypted = des.encrypt(message, key);
+            String encrypted = des.encrypt(plainText, key);
             return "MANUAL_DES|" + key + "|" + encrypted;
         }
-        // MANUEL AES - Direkt anahtar kullan
-        else if (method.equals("AES (Manuel Implementasyon)")) {
+        
+        
+        else if (method.equals("AES (Manuel - Direkt Anahtar)")) {
+            System.out.println(">>> MANUAL AES ENCRYPTION");
             if (key.length() != 16) {
-                throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalıdır!");
+                throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı!");
             }
-            String encrypted = aes.encrypt(message, key);
+            String encrypted = aes.encrypt(plainText, key);
             return "MANUAL_AES|" + key + "|" + encrypted;
         }
-        // KÜTÜPHANE DES - RSA ile anahtar üret
-        else if (method.equals("DES (Java Kütüphanesi)")) {
-            return hybridDESLibrary(message, key);
+        
+        
+        else if (method.equals("DES (Kütüphane - RSA ile Anahtar)")) {
+            System.out.println(">>> LIBRARY DES ENCRYPTION WITH RSA");
+            String desKey = rsaKeyGen.generateSymmetricKey(8, key.isEmpty() ? "auto" : key);
+            System.out.println("Generated DES Key: " + desKey + " (length: " + desKey.length() + ")");
+            
+            if (desKey.length() != 8) {
+                throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı!");
+            }
+            
+            String encrypted = desLib.encrypt(plainText, desKey);
+            String rsaKeys = rsaKeyGen.getKeyPairAsString();
+            return rsaKeys + "|" + desKey + "|" + encrypted;
         }
-        // KÜTÜPHANE AES - RSA ile anahtar üret
-        else if (method.equals("AES (Java Kütüphanesi)")) {
-            return hybridAESLibrary(message, key);
+        
+        
+        else if (method.equals("AES (Kütüphane - RSA ile Anahtar)")) {
+            System.out.println(">>> LIBRARY AES ENCRYPTION WITH RSA");
+            String aesKey = rsaKeyGen.generateSymmetricKey(16, key.isEmpty() ? "auto" : key);
+            System.out.println("Generated AES Key: " + aesKey + " (length: " + aesKey.length() + ")");
+            
+            if (aesKey.length() != 16) {
+                throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı!");
+            }
+            
+            String encrypted = aesLib.encrypt(plainText, aesKey);
+            String rsaKeys = rsaKeyGen.getKeyPairAsString();
+            return rsaKeys + "|" + aesKey + "|" + encrypted;
         }
         
-        throw new IllegalArgumentException("Geçersiz şifreleme yöntemi!");
+        throw new IllegalArgumentException("Geçersiz şifreleme yöntemi: " + method);
     }
     
-    // ==========================================
-    //  HİBRİT ŞİFRELEME METODLARı
-    // ==========================================
     
-    /**
-     * RSA ile 8 byte DES anahtarı üret ve manuel DES ile şifrele
-     */
-    private String hybridDESManual(String message, String rsaParams) throws Exception {
-        System.out.println("\n=== HYBRID DES MANUAL ===");
-        
-        // RSA ile DES anahtarı üret (8 byte)
-        String desKey = rsaKeyGen.generateSymmetricKey(8, rsaParams);
-        System.out.println("Generated DES Key: " + desKey);
-        
-        // DES ile mesajı şifrele
-        String encrypted = des.encrypt(message, desKey);
-        
-        // RSA public/private key'leri al
-        String rsaKeys = rsaKeyGen.getKeyPairAsString();
-        
-        // Format: RSA_KEYS|DES_KEY|ENCRYPTED_MESSAGE
-        return rsaKeys + "|" + desKey + "|" + encrypted;
-    }
-    
-    /**
-     * RSA ile 16 byte AES anahtarı üret ve manuel AES ile şifrele
-     */
-    private String hybridAESManual(String message, String rsaParams) throws Exception {
-        System.out.println("\n=== HYBRID AES MANUAL ===");
-        
-        // RSA ile AES anahtarı üret (16 byte)
-        String aesKey = rsaKeyGen.generateSymmetricKey(16, rsaParams);
-        System.out.println("Generated AES Key: " + aesKey);
-        
-        // AES ile mesajı şifrele
-        String encrypted = aes.encrypt(message, aesKey);
-        
-        // RSA public/private key'leri al
-        String rsaKeys = rsaKeyGen.getKeyPairAsString();
-        
-        // Format: RSA_KEYS|AES_KEY|ENCRYPTED_MESSAGE
-        return rsaKeys + "|" + aesKey + "|" + encrypted;
-    }
-    
-    /**
-     * RSA ile DES anahtarı üret ve Java kütüphanesi ile şifrele
-     */
-    private String hybridDESLibrary(String message, String rsaParams) throws Exception {
-        System.out.println("\n=== HYBRID DES LIBRARY ===");
-        
-        // RSA ile DES anahtarı üret
-        String desKey = rsaKeyGen.generateSymmetricKey(8, rsaParams);
-        System.out.println("Generated DES Key: " + desKey);
-        
-        // DES Library ile şifrele
-        String encrypted = desLib.encrypt(message, desKey);
-        
-        // RSA key'leri al
-        String rsaKeys = rsaKeyGen.getKeyPairAsString();
-        
-        return rsaKeys + "|" + desKey + "|" + encrypted;
-    }
-    
-    /**
-     * RSA ile AES anahtarı üret ve Java kütüphanesi ile şifrele
-     */
-    private String hybridAESLibrary(String message, String rsaParams) throws Exception {
-        System.out.println("\n=== HYBRID AES LIBRARY ===");
-        
-        // RSA ile AES anahtarı üret
-        String aesKey = rsaKeyGen.generateSymmetricKey(16, rsaParams);
-        System.out.println("Generated AES Key: " + aesKey);
-        
-        // AES Library ile şifrele
-        String encrypted = aesLib.encrypt(message, aesKey);
-        
-        // RSA key'leri al
-        String rsaKeys = rsaKeyGen.getKeyPairAsString();
-        
-        return rsaKeys + "|" + aesKey + "|" + encrypted;
-    }
-    
-    // ==========================================
-    //  KLASİK ŞİFRELEME METODLARı (DEĞİŞMEDİ)
-    // ==========================================
     
     private String caesarEncrypt(String text, int shift) {
         StringBuilder result = new StringBuilder();
@@ -213,9 +149,11 @@ public class EncryptionEngine {
         
         for (char c : text.toCharArray()) {
             if (Character.isUpperCase(c)) {
-                result.append(key.charAt(alphabet.indexOf(c)));
+                int index = alphabet.indexOf(c);
+                result.append(key.charAt(index));
             } else if (Character.isLowerCase(c)) {
-                result.append(Character.toLowerCase(key.charAt(alphabet.indexOf(Character.toUpperCase(c)))));
+                int index = alphabet.indexOf(Character.toUpperCase(c));
+                result.append(Character.toLowerCase(key.charAt(index)));
             } else {
                 result.append(c);
             }
@@ -229,10 +167,12 @@ public class EncryptionEngine {
         for (char c : text.toCharArray()) {
             if (Character.isUpperCase(c)) {
                 int x = c - 'A';
-                result.append((char) ((a * x + b) % 26 + 'A'));
+                int y = (a * x + b) % 26;
+                result.append((char) (y + 'A'));
             } else if (Character.isLowerCase(c)) {
                 int x = c - 'a';
-                result.append((char) ((a * x + b) % 26 + 'a'));
+                int y = (a * x + b) % 26;
+                result.append((char) (y + 'a'));
             } else {
                 result.append(c);
             }
@@ -241,53 +181,65 @@ public class EncryptionEngine {
     }
     
     private String railFenceEncrypt(String text, int rails) {
-        if (rails == 1) return text;
+        if (rails <= 1) return text;
         
         StringBuilder[] fence = new StringBuilder[rails];
-        for (int i = 0; i < rails; i++) fence[i] = new StringBuilder();
+        for (int i = 0; i < rails; i++) {
+            fence[i] = new StringBuilder();
+        }
         
-        int rail = 0, direction = 1;
+        int rail = 0;
+        int direction = 1;
         
         for (char c : text.toCharArray()) {
             fence[rail].append(c);
-            if (rail == 0) direction = 1;
-            else if (rail == rails - 1) direction = -1;
+            
+            if (rail == 0) {
+                direction = 1;
+            } else if (rail == rails - 1) {
+                direction = -1;
+            }
+            
             rail += direction;
         }
         
         StringBuilder result = new StringBuilder();
-        for (StringBuilder sb : fence) result.append(sb);
+        for (StringBuilder sb : fence) {
+            result.append(sb);
+        }
+        
         return result.toString();
     }
     
     private String routeCipherEncrypt(String text, int cols, String direction) {
-        text = text.replaceAll("\\s+", "").toUpperCase();
         int rows = (int) Math.ceil((double) text.length() / cols);
         char[][] grid = new char[rows][cols];
         
-        int index = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                if (index < text.length()) {
-                    grid[i][j] = text.charAt(index++);
-                } else {
-                    grid[i][j] = '*';
-                }
+                grid[i][j] = '*';
+            }
+        }
+        
+        int index = 0;
+        for (int i = 0; i < rows && index < text.length(); i++) {
+            for (int j = 0; j < cols && index < text.length(); j++) {
+                grid[i][j] = text.charAt(index++);
             }
         }
         
         StringBuilder result = new StringBuilder();
+        
         if (direction.equalsIgnoreCase("clockwise") || direction.equalsIgnoreCase("saatYonu")) {
-            result = readSpiralClockwise(grid, rows, cols);
+            readSpiralClockwise(grid, result, rows, cols);
         } else {
-            result = readSpiralCounterClockwise(grid, rows, cols);
+            readSpiralCounterClockwise(grid, result, rows, cols);
         }
         
         return result.toString();
     }
     
-    private StringBuilder readSpiralClockwise(char[][] grid, int rows, int cols) {
-        StringBuilder result = new StringBuilder();
+    private void readSpiralClockwise(char[][] grid, StringBuilder result, int rows, int cols) {
         int top = 0, bottom = rows - 1;
         int left = 0, right = cols - 1;
         
@@ -295,31 +247,28 @@ public class EncryptionEngine {
         
         while (top <= bottom && left <= right) {
             for (int i = top + 1; i <= bottom && right >= left; i++) {
-                result.append(grid[i][right]);
+                if (grid[i][right] != '*') result.append(grid[i][right]);
             }
             right--;
             
             for (int i = right; i >= left && top <= bottom; i--) {
-                result.append(grid[bottom][i]);
+                if (grid[bottom][i] != '*') result.append(grid[bottom][i]);
             }
             bottom--;
             
             for (int i = bottom; i >= top && left <= right; i--) {
-                result.append(grid[i][left]);
+                if (grid[i][left] != '*') result.append(grid[i][left]);
             }
             left++;
             
             for (int i = left; i <= right && top <= bottom; i++) {
-                result.append(grid[top][i]);
+                if (grid[top][i] != '*') result.append(grid[top][i]);
             }
             top++;
         }
-        
-        return result;
     }
     
-    private StringBuilder readSpiralCounterClockwise(char[][] grid, int rows, int cols) {
-        StringBuilder result = new StringBuilder();
+    private void readSpiralCounterClockwise(char[][] grid, StringBuilder result, int rows, int cols) {
         int top = 0, bottom = rows - 1;
         int left = 0, right = cols - 1;
         
@@ -327,33 +276,29 @@ public class EncryptionEngine {
         
         while (top <= bottom && left <= right) {
             for (int i = right - 1; i >= left && top <= bottom; i--) {
-                result.append(grid[top][i]);
+                if (grid[top][i] != '*') result.append(grid[top][i]);
             }
             top++;
             
             for (int i = top; i <= bottom && left <= right; i++) {
-                result.append(grid[i][left]);
+                if (grid[i][left] != '*') result.append(grid[i][left]);
             }
             left++;
             
             for (int i = left; i <= right && top <= bottom; i++) {
-                result.append(grid[bottom][i]);
+                if (grid[bottom][i] != '*') result.append(grid[bottom][i]);
             }
             bottom--;
             
             for (int i = bottom; i >= top && left <= right; i--) {
-                result.append(grid[i][right]);
+                if (grid[i][right] != '*') result.append(grid[i][right]);
             }
             right--;
         }
-        
-        return result;
     }
     
     private String columnarTranspositionEncrypt(String text, String key) {
-        text = text.replaceAll("\\s+", "");
         key = key.toUpperCase();
-        int[] order = getKeyOrder(key);
         int cols = key.length();
         int rows = (int) Math.ceil((double) text.length() / cols);
         
@@ -362,18 +307,25 @@ public class EncryptionEngine {
         
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                grid[i][j] = (index < text.length()) ? text.charAt(index++) : 'X';
+                if (index < text.length()) {
+                    grid[i][j] = text.charAt(index++);
+                } else {
+                    grid[i][j] = 'X';
+                }
             }
         }
         
+        int[] order = getKeyOrder(key);
         StringBuilder result = new StringBuilder();
+        result.append(text.length()).append(":");
+        
         for (int col : order) {
             for (int i = 0; i < rows; i++) {
                 result.append(grid[i][col]);
             }
         }
         
-        return text.length() + ":" + result.toString();
+        return result.toString();
     }
     
     private String polybiusEncrypt(String text, String key) {
@@ -382,46 +334,26 @@ public class EncryptionEngine {
         
         for (char c : text.toUpperCase().toCharArray()) {
             if (c == ' ') {
-                result.append(" ");
+                result.append(' ');
                 continue;
             }
             
-            if (c == 'İ' || c == 'I') c = 'I';
             if (c == 'J') c = 'I';
+            
             c = normalizeTurkishChar(c);
             
-            if (!Character.isLetter(c)) {
-                result.append(c);
-                continue;
-            }
-            
-            boolean found = false;
-            for (int i = 0; i < 5; i++) {
-                for (int j = 0; j < 5; j++) {
-                    if (square[i][j] == c) {
-                        result.append(i + 1).append(j + 1);
-                        found = true;
-                        break;
+            if (Character.isLetter(c)) {
+                for (int i = 0; i < 5; i++) {
+                    for (int j = 0; j < 5; j++) {
+                        if (square[i][j] == c) {
+                            result.append(i + 1).append(j + 1);
+                            break;
+                        }
                     }
                 }
-                if (found) break;
             }
-            
-            if (!found) result.append("00");
         }
         return result.toString();
-    }
-    
-    private char normalizeTurkishChar(char c) {
-        switch(c) {
-            case 'Ç': return 'C';
-            case 'Ğ': return 'G';
-            case 'İ': return 'I';
-            case 'Ö': return 'O';
-            case 'Ş': return 'S';
-            case 'Ü': return 'U';
-            default: return c;
-        }
     }
     
     private String pigpenEncrypt(String text) {
@@ -429,10 +361,10 @@ public class EncryptionEngine {
         StringBuilder result = new StringBuilder();
         
         for (char c : text.toUpperCase().toCharArray()) {
-            if (pigpenMap.containsKey(c)) {
+            if (c == ' ') {
+                result.append(' ');
+            } else if (pigpenMap.containsKey(c)) {
                 result.append(pigpenMap.get(c));
-            } else {
-                result.append(c);
             }
         }
         return result.toString();
@@ -440,7 +372,10 @@ public class EncryptionEngine {
     
     private String hillEncrypt(String text, int[][] keyMatrix) {
         text = text.toUpperCase().replaceAll("[^A-Z]", "");
-        if (text.length() % 2 != 0) text += "X";
+        
+        if (text.length() % 2 != 0) {
+            text += "X";
+        }
         
         StringBuilder result = new StringBuilder();
         
@@ -453,8 +388,58 @@ public class EncryptionEngine {
             result.append((char) (c1 + 'A'));
             result.append((char) (c2 + 'A'));
         }
+        
         return result.toString();
     }
+    
+    private String playfairEncrypt(String text, String key) {
+        char[][] matrix = createPlayfairMatrix(key);
+        text = text.toUpperCase().replaceAll("[^A-Z]", "");
+        
+        StringBuilder processed = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char current = text.charAt(i);
+            if (current == 'J') current = 'I';
+            
+            if (i + 1 < text.length()) {
+                char next = text.charAt(i + 1);
+                if (next == 'J') next = 'I';
+                
+                if (current == next) {
+                    processed.append(current).append('X');
+                } else {
+                    processed.append(current).append(next);
+                    i++;
+                }
+            } else {
+                processed.append(current).append('X');
+            }
+        }
+        
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < processed.length(); i += 2) {
+            char a = processed.charAt(i);
+            char b = processed.charAt(i + 1);
+            
+            int[] posA = findPosition(matrix, a);
+            int[] posB = findPosition(matrix, b);
+            
+            if (posA[0] == posB[0]) {
+                result.append(matrix[posA[0]][(posA[1] + 1) % 5]);
+                result.append(matrix[posB[0]][(posB[1] + 1) % 5]);
+            } else if (posA[1] == posB[1]) {
+                result.append(matrix[(posA[0] + 1) % 5][posA[1]]);
+                result.append(matrix[(posB[0] + 1) % 5][posB[1]]);
+            } else {
+                result.append(matrix[posA[0]][posB[1]]);
+                result.append(matrix[posB[0]][posA[1]]);
+            }
+        }
+        
+        return result.toString();
+    }
+    
+   
     
     private int[] getKeyOrder(String key) {
         char[] keyChars = key.toCharArray();
@@ -486,11 +471,8 @@ public class EncryptionEngine {
             for (char c : key.toUpperCase().toCharArray()) {
                 c = normalizeTurkishChar(c);
                 if (Character.isLetter(c) && !used.contains(c) && c != 'J') {
-                    if (c == 'J') c = 'I';
-                    if (!used.contains(c)) {
-                        alphabet.append(c);
-                        used.add(c);
-                    }
+                    alphabet.append(c);
+                    used.add(c);
                 }
             }
         }
@@ -506,12 +488,22 @@ public class EncryptionEngine {
         int index = 0;
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
-                if (index < alphabet.length()) {
-                    square[i][j] = alphabet.charAt(index++);
-                }
+                square[i][j] = alphabet.charAt(index++);
             }
         }
         return square;
+    }
+    
+    private char normalizeTurkishChar(char c) {
+        switch(c) {
+            case 'Ç': return 'C';
+            case 'Ğ': return 'G';
+            case 'İ': return 'I';
+            case 'Ö': return 'O';
+            case 'Ş': return 'S';
+            case 'Ü': return 'U';
+            default: return c;
+        }
     }
     
     private Map<Character, String> createPigpenMap() {
@@ -524,94 +516,59 @@ public class EncryptionEngine {
         for (int i = 0; i < letters.length; i++) {
             map.put(letters[i], symbols[i]);
         }
-        map.put(' ', " ");
         return map;
     }
-
-    private String playfairEncrypt(String text, String key) {
-        char[][] matrix = createPlayfairMatrix(key);
-        text = preparePlayfairText(text);
-
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < text.length(); i += 2) {
-            char a = text.charAt(i);
-            char b = text.charAt(i + 1);
-
-            int[] posA = findPosition(matrix, a);
-            int[] posB = findPosition(matrix, b);
-
-            if (posA[0] == posB[0]) {
-                result.append(matrix[posA[0]][(posA[1] + 1) % 5]);
-                result.append(matrix[posB[0]][(posB[1] + 1) % 5]);
-            } else if (posA[1] == posB[1]) {
-                result.append(matrix[(posA[0] + 1) % 5][posA[1]]);
-                result.append(matrix[(posB[0] + 1) % 5][posB[1]]);
-            } else {
-                result.append(matrix[posA[0]][posB[1]]);
-                result.append(matrix[posB[0]][posA[1]]);
-            }
-        }
-
-        return result.toString();
-    }
-
-    private String preparePlayfairText(String text) {
-        text = text.toUpperCase().replace("J", "I").replaceAll("[^A-Z]", "");
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < text.length(); i++) {
-            sb.append(text.charAt(i));
-            if (i + 1 < text.length() && text.charAt(i) == text.charAt(i + 1))
-                sb.append('X');
-        }
-
-        if (sb.length() % 2 != 0)
-            sb.append('X');
-
-        return sb.toString();
-    }
-
+    
     private char[][] createPlayfairMatrix(String key) {
+        char[][] matrix = new char[5][5];
         boolean[] used = new boolean[26];
         used['J' - 'A'] = true;
-
-        char[][] matrix = new char[5][5];
+        
         int row = 0, col = 0;
-
+        
         if (key != null && !key.isEmpty()) {
             for (char c : key.toUpperCase().toCharArray()) {
                 if (!Character.isLetter(c)) continue;
                 if (c == 'J') c = 'I';
-
+                
                 int index = c - 'A';
                 if (!used[index]) {
-                    matrix[row][col++] = c;
+                    matrix[row][col] = c;
                     used[index] = true;
-                    if (col == 5) { col = 0; row++; }
+                    col++;
+                    if (col == 5) {
+                        col = 0;
+                        row++;
+                    }
                 }
             }
         }
-
+        
         for (char c = 'A'; c <= 'Z'; c++) {
             if (c == 'J') continue;
-
             int index = c - 'A';
             if (!used[index]) {
-                matrix[row][col++] = c;
+                matrix[row][col] = c;
                 used[index] = true;
-                if (col == 5) { col = 0; row++; }
+                col++;
+                if (col == 5) {
+                    col = 0;
+                    row++;
+                }
             }
         }
+        
         return matrix;
     }
-
+    
     private int[] findPosition(char[][] matrix, char c) {
-        for (int i = 0; i < 5; i++)
-            for (int j = 0; j < 5; j++)
-                if (matrix[i][j] == c)
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                if (matrix[i][j] == c) {
                     return new int[]{i, j};
-
+                }
+            }
+        }
         return new int[]{0, 0};
     }
 }

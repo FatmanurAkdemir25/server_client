@@ -22,7 +22,6 @@ public class ServerGUI extends JFrame {
     private DecryptionEngine decryptionEngine;
     private FileEncryptionHandler fileHandler;
     
-    
     private String receivedFileName;
     private String receivedFileContent;
     private boolean isFileMode = false;
@@ -43,7 +42,6 @@ public class ServerGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton clientTab = new JButton("İstemci (Şifreleme)");
         JButton serverTab = new JButton("Sunucu (Deşifreleme)");
@@ -97,7 +95,9 @@ public class ServerGUI extends JFrame {
                 "DES (Manuel - Direkt Anahtar)",
                 "AES (Manuel - Direkt Anahtar)",
                 "DES (Kütüphane - RSA ile Anahtar)",
-                "AES (Kütüphane - RSA ile Anahtar)"
+                "AES (Kütüphane - RSA ile Anahtar)",
+                "DES (Kütüphane - ECC ile Anahtar)",
+                "AES (Kütüphane - ECC ile Anahtar)"
         });
         methodCombo.setMaximumSize(new Dimension(800, 40));
         methodCombo.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -211,7 +211,7 @@ public class ServerGUI extends JFrame {
         String method = (String) methodCombo.getSelectedItem();
         String key = keyField.getText().trim();
         String encryptedText = encryptedTextArea.getText().trim();
-
+    
         if (encryptedText.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Lütfen şifreli mesaj girin!");
             return;
@@ -223,24 +223,40 @@ public class ServerGUI extends JFrame {
                 "Bilgi", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-
-        if (!method.contains("DES") && !method.contains("AES")) {
+    
+        if (!method.contains("DES") && !method.contains("AES") && 
+            !method.contains("ECC") && !method.contains("RSA ile") && !method.contains("Kütüphane")) {
             if (!method.startsWith("Polybius") && !method.startsWith("Pigpen") && key.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Anahtar boş bırakılamaz!");
                 return;
             }
         }
-
+        
+        if (method.contains("Manuel - Direkt Anahtar")) {
+            if (method.contains("DES") && key.length() != 8) {
+                JOptionPane.showMessageDialog(this, 
+                    "Manuel DES için tam 8 karakterlik anahtar gerekli!", 
+                    "Uyarı", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (method.contains("AES") && key.length() != 16) {
+                JOptionPane.showMessageDialog(this, 
+                    "Manuel AES için tam 16 karakterlik anahtar gerekli!", 
+                    "Uyarı", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+    
         try {
             String decrypted = decryptionEngine.decrypt(method, key, encryptedText);
-
+    
             log("=== DEŞİFRE EDİLDİ ===\nYöntem: " + method +
                     "\nSonuç: " + decrypted + "\n");
-
+    
             JOptionPane.showMessageDialog(this,
                     "Çözülen Mesaj:\n" + decrypted,
                     "Başarılı", JOptionPane.INFORMATION_MESSAGE);
-
+    
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
                     "Deşifreleme hatası: " + ex.getMessage(),
@@ -272,6 +288,7 @@ public class ServerGUI extends JFrame {
                 log("=== DOSYA DEŞİFRELENDİ ===");
                 log("Dosya: " + outputFile.getName());
                 log("Yöntem: " + info.method);
+                log("Anahtar Üretimi: " + info.keyGenMethod);
                 log("Boyut: " + info.fileSize + " bytes");
                 
                 lastDecryptedFile = outputFile;
@@ -280,6 +297,7 @@ public class ServerGUI extends JFrame {
                 int choice = JOptionPane.showConfirmDialog(this,
                     "Dosya başarıyla deşifrelendi!\n\n" + 
                     "Dosya: " + outputFile.getName() + "\n" +
+                    "Anahtar Üretimi: " + info.keyGenMethod + "\n" +
                     "Konum: " + outputFile.getAbsolutePath() + "\n\n" +
                     "Dosyayı şimdi açmak ister misiniz?",
                     "Başarılı", 

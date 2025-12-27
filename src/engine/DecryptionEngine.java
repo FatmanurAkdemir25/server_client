@@ -12,12 +12,17 @@ public class DecryptionEngine {
     private AESAlgorithm aes = new AESAlgorithm();
     private DESLibrary desLib = new DESLibrary();
     private AESLibrary aesLib = new AESLibrary();
+
+    public DecryptionEngine() {
+        System.out.println("DecryptionEngine initialized");
+    }
     
     public String decrypt(String method, String key, String encryptedText) throws Exception {
         System.out.println("\n=== DECRYPTION DEBUG ===");
         System.out.println("Method: " + method);
         System.out.println("Key: " + key);
         System.out.println("Encrypted Text Length: " + encryptedText.length());
+        System.out.println("Encrypted Text Preview: " + encryptedText.substring(0, Math.min(100, encryptedText.length())));
 
         
         if (method.startsWith("Caesar")) {
@@ -79,7 +84,7 @@ public class DecryptionEngine {
         
         
         else if (method.equals("DES (Kütüphane - RSA ile Anahtar)")) {
-            System.out.println(">>> LIBRARY DES DECRYPTION");
+            System.out.println(">>> LIBRARY DES DECRYPTION WITH RSA");
             String[] parts = encryptedText.split("\\|");
             if (parts.length < 3) {
                 throw new Exception("Geçersiz format!");
@@ -95,7 +100,7 @@ public class DecryptionEngine {
         
         
         else if (method.equals("AES (Kütüphane - RSA ile Anahtar)")) {
-            System.out.println(">>> LIBRARY AES DECRYPTION");
+            System.out.println(">>> LIBRARY AES DECRYPTION WITH RSA");
             String[] parts = encryptedText.split("\\|");
             if (parts.length < 3) {
                 throw new Exception("Geçersiz format!");
@@ -106,6 +111,80 @@ public class DecryptionEngine {
             String encrypted = parts[2];
             
             System.out.println("AES Key: " + aesKey);
+            return aesLib.decrypt(encrypted, aesKey);
+        }
+        
+        
+        
+        
+        else if (method.equals("DES (Kütüphane - ECC ile Anahtar)")) {
+            System.out.println(">>> LIBRARY DES DECRYPTION WITH ECC");
+            String[] parts = encryptedText.split("\\|");
+            
+            if (parts.length < 2) {
+                System.err.println("ERROR: Invalid format! Expected 2 parts, got " + parts.length);
+                System.err.println("Parts: " + Arrays.toString(parts));
+                throw new Exception("Geçersiz format! Beklenen: ENCODED_KEY|ENCRYPTED_DATA");
+            }
+            
+            String desKeyEncoded = parts[0];
+            String encrypted = parts[1];
+            
+            System.out.println("DES Key (encoded): " + desKeyEncoded + " (length: " + desKeyEncoded.length() + ")");
+            System.out.println("Encrypted data length: " + encrypted.length());
+            
+            
+            String desKey;
+            try {
+                byte[] decodedBytes = java.util.Base64.getDecoder().decode(desKeyEncoded);
+                desKey = new String(decodedBytes, "UTF-8");
+                System.out.println("Decoded DES Key: " + desKey + " (length: " + desKey.length() + ")");
+            } catch (Exception e) {
+                System.err.println("Base64 decode failed: " + e.getMessage());
+                throw new Exception("Anahtar decode edilemedi: " + e.getMessage());
+            }
+            
+            
+            if (desKey.length() != 8) {
+                throw new Exception("DES anahtarı 8 karakter olmalı! Bulunan: " + desKey.length());
+            }
+            
+            return desLib.decrypt(encrypted, desKey);
+        }
+        
+        
+        else if (method.equals("AES (Kütüphane - ECC ile Anahtar)")) {
+            System.out.println(">>> LIBRARY AES DECRYPTION WITH ECC");
+            String[] parts = encryptedText.split("\\|");
+            
+            if (parts.length < 2) {
+                System.err.println("ERROR: Invalid format! Expected 2 parts, got " + parts.length);
+                System.err.println("Parts: " + Arrays.toString(parts));
+                throw new Exception("Geçersiz format! Beklenen: ENCODED_KEY|ENCRYPTED_DATA");
+            }
+            
+            String aesKeyEncoded = parts[0];
+            String encrypted = parts[1];
+            
+            System.out.println("AES Key (encoded): " + aesKeyEncoded + " (length: " + aesKeyEncoded.length() + ")");
+            System.out.println("Encrypted data length: " + encrypted.length());
+            
+            
+            String aesKey;
+            try {
+                byte[] decodedBytes = java.util.Base64.getDecoder().decode(aesKeyEncoded);
+                aesKey = new String(decodedBytes, "UTF-8");
+                System.out.println("Decoded AES Key: " + aesKey + " (length: " + aesKey.length() + ")");
+            } catch (Exception e) {
+                System.err.println("Base64 decode failed: " + e.getMessage());
+                throw new Exception("Anahtar decode edilemedi: " + e.getMessage());
+            }
+            
+            
+            if (aesKey.length() != 16) {
+                throw new Exception("AES anahtarı 16 karakter olmalı! Bulunan: " + aesKey.length());
+            }
+            
             return aesLib.decrypt(encrypted, aesKey);
         }
         
@@ -402,15 +481,12 @@ public class DecryptionEngine {
     }
     
     private String hillDecrypt(String text, int[][] keyMatrix) {
-        
         int det = (keyMatrix[0][0] * keyMatrix[1][1] - keyMatrix[0][1] * keyMatrix[1][0]) % 26;
         if (det < 0) det += 26;
-        
         
         if (det == 0) {
             throw new IllegalArgumentException("Matris determinantı 0 olamaz!");
         }
-        
         
         int[][] invMatrix = invertMatrix(keyMatrix);
         

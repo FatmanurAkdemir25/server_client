@@ -22,7 +22,6 @@ public class KeyHelperDialog extends JDialog {
         panel.add(titleLabel);
         panel.add(Box.createRigidArea(new Dimension(0, 15)));
         
-        
         if (method.contains("Manuel") && method.contains("DES")) {
             addInfo(panel, "DES anahtarı TAM 8 karakter olmalı!");
             addExample(panel, "secret12", "8 karakter - basit");
@@ -43,6 +42,25 @@ public class KeyHelperDialog extends JDialog {
             addExample(panel, "61,53", "Manuel RSA: p=61, q=53");
             addExample(panel, "97,89", "Manuel RSA: p=97, q=89");
             addExample(panel, "127,131", "Manuel RSA: p=127, q=131");
+            
+        } else if (method.contains("ECC ile Anahtar")) {
+            addInfo(panel, "ℹ️ ECC ile simetrik anahtar üretimi - RSA'dan 10x daha hızlı!");
+            
+            addExample(panel, "auto", "Otomatik (önerilen) - P-256 eğrisi");
+            addExample(panel, "", "Boş bırakılabilir (otomatik)");
+            
+            addExample(panel, "secp256r1", "P-256 (NIST) - Hızlı ve güvenli");
+            addExample(panel, "secp384r1", "P-384 (NIST) - Daha yüksek güvenlik");
+            addExample(panel, "secp521r1", "P-521 (NIST) - Maksimum güvenlik");
+            addExample(panel, "secp256k1", "Bitcoin/Ethereum eğrisi");
+            
+            if (method.contains("DES")) {
+                addInfo(panel, "ECC ile 8 karakterlik DES anahtarı oluşturulur");
+            } else if (method.contains("AES")) {
+                addInfo(panel, "ECC ile 16 karakterlik AES anahtarı oluşturulur");
+            }
+            
+            addInfo(panel, "Performans: RSA'ya göre ~10x daha hızlı anahtar üretimi");
             
         } else if (method.startsWith("Caesar")) {
             addExample(panel, "3", "Klasik kaydırma (shift 3)");

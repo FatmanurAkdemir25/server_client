@@ -438,3 +438,147 @@ ENCRYPTED SIZE: 526 bytes
 ENCRYPTION TIME: 128,887 ms
 SIZE INCREASE: 2091,67%
 
+================================================================================
+TIMESTAMP: 2025-12-27 18:37:54.230
+METHOD: DES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 251 bytes
+ENCRYPTION TIME: 32,410 ms
+SIZE INCREASE: 6175,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 21:21:59.900
+METHOD: DES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 251 bytes
+ENCRYPTION TIME: 36,856 ms
+SIZE INCREASE: 6175,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 21:22:40.110
+METHOD: AES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 271 bytes
+ENCRYPTION TIME: 7,713 ms
+SIZE INCREASE: 6675,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 21:56:10.518
+METHOD: DES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 251 bytes
+ENCRYPTION TIME: 44,863 ms
+SIZE INCREASE: 6175,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 21:56:39.879
+METHOD: AES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 271 bytes
+ENCRYPTION TIME: 8,120 ms
+SIZE INCREASE: 6675,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 21:56:54.641
+METHOD: ECC (Elliptic Curve - ECIES)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 284 bytes
+ENCRYPTION TIME: 11,556 ms
+SIZE INCREASE: 7000,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 21:57:06.380
+METHOD: ECC + AES (Hybrid)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 334 bytes
+ENCRYPTION TIME: 6,884 ms
+SIZE INCREASE: 8250,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 21:57:15.685
+METHOD: ECDSA (Digital Signature)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 232 bytes
+ENCRYPTION TIME: 13,264 ms
+SIZE INCREASE: 5700,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:01:46.116
+METHOD: ECC (Elliptic Curve - ECIES)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 284 bytes
+ENCRYPTION TIME: 25,248 ms
+SIZE INCREASE: 7000,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:02:09.158
+METHOD: ECC + AES (Hybrid)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 334 bytes
+ENCRYPTION TIME: 5,445 ms
+SIZE INCREASE: 8250,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:02:24.632
+METHOD: AES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 271 bytes
+ENCRYPTION TIME: 10,420 ms
+SIZE INCREASE: 6675,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:25:59.089
+METHOD: DES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 251 bytes
+ENCRYPTION TIME: 48,883 ms
+SIZE INCREASE: 6175,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:26:26.253
+METHOD: AES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 271 bytes
+ENCRYPTION TIME: 11,564 ms
+SIZE INCREASE: 6675,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:29:56.652
+METHOD: DES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 255 bytes
+ENCRYPTION TIME: 35,686 ms
+SIZE INCREASE: 6275,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:31:02.002
+METHOD: DES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 255 bytes
+ENCRYPTION TIME: 36,934 ms
+SIZE INCREASE: 6275,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:31:14.556
+METHOD: AES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 279 bytes
+ENCRYPTION TIME: 11,486 ms
+SIZE INCREASE: 6875,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:36:06.269
+METHOD: DES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 25 bytes
+ENCRYPTION TIME: 46,115 ms
+SIZE INCREASE: 525,00%
+
+================================================================================
+TIMESTAMP: 2025-12-27 22:36:17.423
+METHOD: AES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 49 bytes
+ENCRYPTION TIME: 10,886 ms
+SIZE INCREASE: 1125,00%
+

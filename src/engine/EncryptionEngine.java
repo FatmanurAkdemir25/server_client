@@ -6,6 +6,7 @@ import src.algorithms.symmetric.AESLibrary;
 import src.algorithms.symmetric.DESAlgorithm;
 import src.algorithms.symmetric.DESLibrary;
 import src.algorithms.asymmetric.RSAKeyGenerator;
+import src.algorithms.asymmetric.ECCKeyGenerator;
 
 public class EncryptionEngine {
     
@@ -14,6 +15,16 @@ public class EncryptionEngine {
     private DESLibrary desLib = new DESLibrary();
     private AESLibrary aesLib = new AESLibrary();
     private RSAKeyGenerator rsaKeyGen = new RSAKeyGenerator();
+    private ECCKeyGenerator eccKeyGen;
+    
+    public EncryptionEngine() {
+        try {
+            eccKeyGen = new ECCKeyGenerator();
+            System.out.println("EncryptionEngine: ECC initialized");
+        } catch (Exception e) {
+            System.err.println("ECC failed: " + e.getMessage());
+        }
+    }
     
     public String encrypt(String method, String key, String plainText) throws Exception {
         System.out.println("\n=== ENCRYPTION DEBUG ===");
@@ -88,7 +99,7 @@ public class EncryptionEngine {
             return rsaKeys + "|" + desKey + "|" + encrypted;
         }
         
-        
+    
         else if (method.equals("AES (Kütüphane - RSA ile Anahtar)")) {
             System.out.println(">>> LIBRARY AES ENCRYPTION WITH RSA");
             String aesKey = rsaKeyGen.generateSymmetricKey(16, key.isEmpty() ? "auto" : key);
@@ -101,6 +112,58 @@ public class EncryptionEngine {
             String encrypted = aesLib.encrypt(plainText, aesKey);
             String rsaKeys = rsaKeyGen.getKeyPairAsString();
             return rsaKeys + "|" + aesKey + "|" + encrypted;
+        }
+        
+        
+        
+        
+        else if (method.equals("DES (Kütüphane - ECC ile Anahtar)")) {
+            System.out.println(">>> LIBRARY DES ENCRYPTION WITH ECC");
+            
+            if (eccKeyGen == null) {
+                throw new Exception("ECC Key Generator başlatılamadı!");
+            }
+            
+            String desKey = eccKeyGen.generateSymmetricKey(8, key.isEmpty() ? "auto" : key);
+            System.out.println("Generated DES Key with ECC: " + desKey + " (length: " + desKey.length() + ")");
+            
+            if (desKey.length() != 8) {
+                throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı! Oluşturulan: " + desKey.length());
+            }
+            
+            String encrypted = desLib.encrypt(plainText, desKey);
+            
+            
+            String desKeyEncoded = java.util.Base64.getEncoder().encodeToString(desKey.getBytes("UTF-8"));
+            System.out.println("DES Key encoded: " + desKeyEncoded + " (length: " + desKeyEncoded.length() + ")");
+            
+            
+            return desKeyEncoded + "|" + encrypted;
+        }
+    
+        
+        else if (method.equals("AES (Kütüphane - ECC ile Anahtar)")) {
+            System.out.println(">>> LIBRARY AES ENCRYPTION WITH ECC");
+            
+            if (eccKeyGen == null) {
+                throw new Exception("ECC Key Generator başlatılamadı!");
+            }
+            
+            String aesKey = eccKeyGen.generateSymmetricKey(16, key.isEmpty() ? "auto" : key);
+            System.out.println("Generated AES Key with ECC: " + aesKey + " (length: " + aesKey.length() + ")");
+            
+            if (aesKey.length() != 16) {
+                throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı! Oluşturulan: " + aesKey.length());
+            }
+            
+            String encrypted = aesLib.encrypt(plainText, aesKey);
+            
+            
+            String aesKeyEncoded = java.util.Base64.getEncoder().encodeToString(aesKey.getBytes("UTF-8"));
+            System.out.println("AES Key encoded: " + aesKeyEncoded + " (length: " + aesKeyEncoded.length() + ")");
+            
+            
+            return aesKeyEncoded + "|" + encrypted;
         }
         
         throw new IllegalArgumentException("Geçersiz şifreleme yöntemi: " + method);
@@ -439,7 +502,7 @@ public class EncryptionEngine {
         return result.toString();
     }
     
-   
+    
     
     private int[] getKeyOrder(String key) {
         char[] keyChars = key.toCharArray();

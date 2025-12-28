@@ -582,3 +582,171 @@ ENCRYPTED SIZE: 49 bytes
 ENCRYPTION TIME: 10,886 ms
 SIZE INCREASE: 1125,00%
 
+================================================================================
+TIMESTAMP: 2025-12-28 04:54:19.395
+METHOD: Caesar Cipher (Kaydırma)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 4 bytes
+ENCRYPTION TIME: 3,229 ms
+SIZE INCREASE: 0,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:54:30.704
+METHOD: Vigenere Cipher
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 4 bytes
+ENCRYPTION TIME: 1,566 ms
+SIZE INCREASE: 0,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:54:44.789
+METHOD: Substitution Cipher
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 4 bytes
+ENCRYPTION TIME: 1,865 ms
+SIZE INCREASE: 0,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:54:57.594
+METHOD: Affine Cipher
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 4 bytes
+ENCRYPTION TIME: 2,097 ms
+SIZE INCREASE: 0,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:55:15.196
+METHOD: Rail Fence Cipher (Zigzag)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 4 bytes
+ENCRYPTION TIME: 2,127 ms
+SIZE INCREASE: 0,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:55:27.816
+METHOD: Route Cipher (Yönlü Şifre)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 4 bytes
+ENCRYPTION TIME: 2,010 ms
+SIZE INCREASE: 0,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:55:44.286
+METHOD: Columnar Transposition (Sütunlu)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 8 bytes
+ENCRYPTION TIME: 1,961 ms
+SIZE INCREASE: 100,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:55:58.280
+METHOD: Polybius Square Cipher
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 8 bytes
+ENCRYPTION TIME: 2,051 ms
+SIZE INCREASE: 100,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:56:12.317
+METHOD: Pigpen Cipher (Domuz Ağılı)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 12 bytes
+ENCRYPTION TIME: 1,799 ms
+SIZE INCREASE: 200,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:56:25.897
+METHOD: Hill Cipher (Matris Şifreleme)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 4 bytes
+ENCRYPTION TIME: 2,326 ms
+SIZE INCREASE: 0,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:56:39.039
+METHOD: Playfair Cipher
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 4 bytes
+ENCRYPTION TIME: 1,955 ms
+SIZE INCREASE: 0,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:56:54.650
+METHOD: DES (Manuel - Direkt Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 36 bytes
+ENCRYPTION TIME: 2,895 ms
+SIZE INCREASE: 800,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:57:07.419
+METHOD: AES (Manuel - Direkt Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 60 bytes
+ENCRYPTION TIME: 2,905 ms
+SIZE INCREASE: 1400,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:57:20.534
+METHOD: DES (Kütüphane - RSA ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 493 bytes
+ENCRYPTION TIME: 80,987 ms
+SIZE INCREASE: 12225,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:57:30.828
+METHOD: AES (Kütüphane - RSA ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 515 bytes
+ENCRYPTION TIME: 25,848 ms
+SIZE INCREASE: 12775,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:57:49.848
+METHOD: DES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 25 bytes
+ENCRYPTION TIME: 10,539 ms
+SIZE INCREASE: 525,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 04:58:02.494
+METHOD: AES (Kütüphane - ECC ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 49 bytes
+ENCRYPTION TIME: 7,035 ms
+SIZE INCREASE: 1125,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 05:06:56.027
+METHOD: DES (Manuel - Direkt Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 36 bytes
+ENCRYPTION TIME: 4,400 ms
+SIZE INCREASE: 800,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 05:07:09.258
+METHOD: AES (Manuel - Direkt Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 60 bytes
+ENCRYPTION TIME: 1,415 ms
+SIZE INCREASE: 1400,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 05:07:22.657
+METHOD: DES (Kütüphane - RSA ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 495 bytes
+ENCRYPTION TIME: 10,246 ms
+SIZE INCREASE: 12275,00%
+
+================================================================================
+TIMESTAMP: 2025-12-28 05:07:30.512
+METHOD: AES (Kütüphane - RSA ile Anahtar)
+ORIGINAL SIZE: 4 bytes
+ENCRYPTED SIZE: 516 bytes
+ENCRYPTION TIME: 12,142 ms
+SIZE INCREASE: 12800,00%
+

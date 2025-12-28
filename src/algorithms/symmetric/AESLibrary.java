@@ -22,7 +22,7 @@ public class AESLibrary {
                 "Örnek geçerli anahtarlar: 'mysecretkey12345', 'PASSWORDPASSWORD', '1234567890123456'",
                 key, key == null ? 0 : key.length()
             );
-            System.err.println("❌ " + error);
+            System.err.println( error);
             throw new IllegalArgumentException(error);
         }
         

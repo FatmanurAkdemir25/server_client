@@ -287,18 +287,48 @@ public class ClientGUI extends JFrame {
             key = "auto";
         }
         
+        
         if (method.contains("Manuel - Direkt Anahtar")) {
-            if (method.contains("DES") && key.length() != 8) {
-                JOptionPane.showMessageDialog(this, 
-                    "Manuel DES için tam 8 karakterlik anahtar gerekli!\nÖrnek: secret12", 
-                    "Uyarı", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            if (method.contains("AES") && key.length() != 16) {
-                JOptionPane.showMessageDialog(this, 
-                    "Manuel AES için tam 16 karakterlik anahtar gerekli!\nÖrnek: mysecretkey12345", 
-                    "Uyarı", JOptionPane.WARNING_MESSAGE);
-                return;
+            if (method.contains("DES")) {
+                if (key.isEmpty()) {
+                    JOptionPane.showMessageDialog(this,
+                        "Manuel DES için anahtar boş olamaz!\n\n" +
+                        "Lütfen tam 8 karakterlik bir anahtar girin.\n" +
+                        "Örnek: secret12",
+                        "Anahtar Gerekli",
+                        JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (key.length() != 8) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Manuel DES için tam 8 karakterlik anahtar gerekli!\n\n" +
+                        "Verilen: " + key.length() + " karakter\n" +
+                        "Gerekli: 8 karakter\n\n" +
+                        "Örnek: secret12", 
+                        "Yanlış Anahtar Uzunluğu", 
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } else if (method.contains("AES")) {
+                if (key.isEmpty()) {
+                    JOptionPane.showMessageDialog(this,
+                        "Manuel AES için anahtar boş olamaz!\n\n" +
+                        "Lütfen tam 16 karakterlik bir anahtar girin.\n" +
+                        "Örnek: mysecretkey12345",
+                        "Anahtar Gerekli",
+                        JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (key.length() != 16) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Manuel AES için tam 16 karakterlik anahtar gerekli!\n\n" +
+                        "Verilen: " + key.length() + " karakter\n" +
+                        "Gerekli: 16 karakter\n\n" +
+                        "Örnek: mysecretkey12345", 
+                        "Yanlış Anahtar Uzunluğu", 
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             }
         }
         
@@ -359,6 +389,51 @@ public class ClientGUI extends JFrame {
             return;
         }
         
+        
+        if (method.contains("Manuel - Direkt Anahtar")) {
+            if (method.contains("DES")) {
+                if (key.isEmpty()) {
+                    JOptionPane.showMessageDialog(this,
+                        "Manuel DES için anahtar boş olamaz!\n\n" +
+                        "Lütfen tam 8 karakterlik bir anahtar girin.\n" +
+                        "Örnek: secret12",
+                        "Anahtar Gerekli",
+                        JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (key.length() != 8) {
+                    JOptionPane.showMessageDialog(this,
+                        "Manuel DES için tam 8 karakterlik anahtar gerekli!\n\n" +
+                        "Verilen anahtar: " + key.length() + " karakter\n" +
+                        "Gerekli: 8 karakter\n\n" +
+                        "Örnek: secret12",
+                        "Yanlış Anahtar Uzunluğu",
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } else if (method.contains("AES")) {
+                if (key.isEmpty()) {
+                    JOptionPane.showMessageDialog(this,
+                        "Manuel AES için anahtar boş olamaz!\n\n" +
+                        "Lütfen tam 16 karakterlik bir anahtar girin.\n" +
+                        "Örnek: mysecretkey12345",
+                        "Anahtar Gerekli",
+                        JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (key.length() != 16) {
+                    JOptionPane.showMessageDialog(this,
+                        "Manuel AES için tam 16 karakterlik anahtar gerekli!\n\n" +
+                        "Verilen anahtar: " + key.length() + " karakter\n" +
+                        "Gerekli: 16 karakter\n\n" +
+                        "Örnek: mysecretkey12345",
+                        "Yanlış Anahtar Uzunluğu",
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+        }
+        
         try {
             resultArea.setText("Dosya şifreleniyor...\n" + selectedFile.getName());
             
@@ -368,38 +443,45 @@ public class ClientGUI extends JFrame {
             java.nio.file.Files.copy(selectedFile.toPath(), tempInput.toPath(), 
                 java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             
-            String rsaParams = method.contains("Manuel") ? "auto" : (key.isEmpty() ? "auto" : key);
+            
+            String keyParams;
+            if (method.contains("Manuel")) {
+                keyParams = key;  
+            } else {
+                keyParams = key.isEmpty() ? "auto" : key;  
+            }
             
             FileEncryptionHandler.EncryptionInfo info = 
-                fileHandler.encryptFile(tempInput, tempOutput, method, rsaParams);
+                fileHandler.encryptFile(tempInput, tempOutput, method, keyParams);
             
             byte[] encryptedBytes = java.nio.file.Files.readAllBytes(tempOutput.toPath());
             String encryptedContent = new String(encryptedBytes, "UTF-8");
             
             resultArea.setText("Sunucuya gönderiliyor...");
             
-            String keyToSend = method.contains("Manuel") ? key : info.symmetricKey;
+            
+            String keyToSend = info.symmetricKey;
             
             client.sendFileToServer(method, keyToSend, 
                 selectedFile.getName() + ".encrypted", encryptedContent);
             
             resultArea.setText(
                 "=== DOSYA ŞİFRELENDİ VE GÖNDERİLDİ ===\n\n" +
-                " Dosya: " + selectedFile.getName() + "\n" +
-                " Yöntem: " + info.method + "\n" +
-                " Anahtar Üretimi: " + info.keyGenMethod + "\n" +
-                " Simetrik Anahtar: " + keyToSend + "\n" +
-                " Orijinal: " + selectedFile.length() + " bytes\n" +
-                " Şifreli: " + encryptedContent.length() + " bytes\n\n" +
-                " Sunucuya gönderildi!"
+                "Dosya: " + selectedFile.getName() + "\n" +
+                "Yöntem: " + info.method + "\n" +
+                "Anahtar Üretimi: " + info.keyGenMethod + "\n" +
+                "Simetrik Anahtar: " + keyToSend + "\n" +
+                "Orijinal: " + selectedFile.length() + " bytes\n" +
+                "Şifreli: " + encryptedContent.length() + " bytes\n\n" +
+                "Sunucuya gönderildi!"
             );
             
             JOptionPane.showMessageDialog(this,
-                " Dosya başarıyla şifrelendi ve sunucuya gönderildi!\n\n" +
-                " Dosya: " + selectedFile.getName() + "\n" +
-                " Yöntem: " + info.method + "\n" +
-                " Anahtar Üretimi: " + info.keyGenMethod + "\n" +
-                " Simetrik Anahtar: " + keyToSend + "\n\n" +
+                "Dosya başarıyla şifrelendi ve sunucuya gönderildi!\n\n" +
+                "Dosya: " + selectedFile.getName() + "\n" +
+                "Yöntem: " + info.method + "\n" +
+                "Anahtar Üretimi: " + info.keyGenMethod + "\n" +
+                "Simetrik Anahtar: " + keyToSend + "\n\n" +
                 "Sunucu ekranında:\n" +
                 "1. 'Dosyayı Kaydet' butonuna tıklayın\n" +
                 "2. Dosyayı kaydedin ve deşifreleyin\n" +
@@ -411,7 +493,7 @@ public class ClientGUI extends JFrame {
             tempOutput.delete();
             
         } catch (Exception e) {
-            resultArea.setText(" HATA: " + e.getMessage());
+            resultArea.setText("HATA: " + e.getMessage());
             e.printStackTrace();
             
             JOptionPane.showMessageDialog(this, 

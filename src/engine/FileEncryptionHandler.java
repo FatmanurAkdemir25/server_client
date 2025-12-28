@@ -2,11 +2,10 @@ package src.engine;
 
 import src.algorithms.symmetric.*;
 import src.algorithms.asymmetric.RSAKeyGenerator;
-import src.algorithms.asymmetric.ECCKeyGenerator;  
+import src.algorithms.asymmetric.ECCKeyGenerator;
 import java.io.*;
 import java.nio.file.*;
 import java.util.Base64;
-
 
 public class FileEncryptionHandler {
     
@@ -15,7 +14,7 @@ public class FileEncryptionHandler {
     private DESLibrary desLib = new DESLibrary();
     private AESLibrary aesLib = new AESLibrary();
     private RSAKeyGenerator rsaKeyGen = new RSAKeyGenerator();
-    private ECCKeyGenerator eccKeyGen;  // ← YENİ
+    private ECCKeyGenerator eccKeyGen;
     
     public FileEncryptionHandler() {
         try {
@@ -51,51 +50,32 @@ public class FileEncryptionHandler {
         String encryptedContent;
         String symmetricKey;
         String asymmetricKeys;
-        String keyGenMethod; 
+        String keyGenMethod;
         
         
-
-        if (method.contains("ECC ile Anahtar")) {
-            System.out.println(">>> Using ECC for key generation");
-            keyGenMethod = "ECC";
-    
-            if (method.contains("DES")) {
-                
-                symmetricKey = eccKeyGen.generateSymmetricKey(8, keyParams.isEmpty() ? "auto" : keyParams);
-                System.out.println("Generated DES key with ECC: " + symmetricKey);
         
-                if (symmetricKey.length() != 8) {
-                    throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı!");
-                }
-
-                if (method.contains("Manuel")) {
-                    encryptedContent = des.encrypt(fileContent, symmetricKey);
-                } else {
-                    encryptedContent = desLib.encrypt(fileContent, symmetricKey);
-                }
-
-            } else if (method.contains("AES")) {
-                
-                symmetricKey = eccKeyGen.generateSymmetricKey(16, keyParams.isEmpty() ? "auto" : keyParams);
-                System.out.println("Generated AES key with ECC: " + symmetricKey);
-        
-                if (symmetricKey.length() != 16) {
-                    throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı!");
-                }
-        
-                if (method.contains("Manuel")) {
-            encryptedContent = aes.encrypt(fileContent, symmetricKey);
-                } else {
-                    encryptedContent = aesLib.encrypt(fileContent, symmetricKey);
-                }
-            } else {
-                throw new IllegalArgumentException("ECC ile sadece DES/AES destekleniyor!");
-            }
-    
+        if (method.contains("Manuel - Direkt Anahtar")) {
+            System.out.println(">>> Using manual direct key");
+            keyGenMethod = "MANUAL";
+            symmetricKey = keyParams;
+            asymmetricKeys = "NONE";
             
-            asymmetricKeys = "ECC_GENERATED";  
+            if (method.contains("DES")) {
+                if (symmetricKey.length() != 8) {
+                    throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı! Verilen: " + symmetricKey.length());
+                }
+                encryptedContent = des.encrypt(fileContent, symmetricKey);
+                
+            } else if (method.contains("AES")) {
+                if (symmetricKey.length() != 16) {
+                    throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı! Verilen: " + symmetricKey.length());
+                }
+                encryptedContent = aes.encrypt(fileContent, symmetricKey);
+            } else {
+                throw new IllegalArgumentException("Geçersiz manuel mod!");
+            }
         }
-
+        
         
         
         else if (method.contains("RSA ile Anahtar")) {
@@ -104,6 +84,7 @@ public class FileEncryptionHandler {
             
             if (method.contains("DES")) {
                 symmetricKey = rsaKeyGen.generateSymmetricKey(8, keyParams.isEmpty() ? "auto" : keyParams);
+                System.out.println("Generated DES key with RSA: " + symmetricKey + " (length: " + symmetricKey.length() + ")");
                 
                 if (symmetricKey.length() != 8) {
                     throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı!");
@@ -117,6 +98,7 @@ public class FileEncryptionHandler {
                 
             } else if (method.contains("AES")) {
                 symmetricKey = rsaKeyGen.generateSymmetricKey(16, keyParams.isEmpty() ? "auto" : keyParams);
+                System.out.println("Generated AES key with RSA: " + symmetricKey + " (length: " + symmetricKey.length() + ")");
                 
                 if (symmetricKey.length() != 16) {
                     throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı!");
@@ -136,26 +118,42 @@ public class FileEncryptionHandler {
         
         
         
-        else if (method.contains("Manuel - Direkt Anahtar")) {
-            System.out.println(">>> Using manual direct key");
-            keyGenMethod = "MANUAL";
-            symmetricKey = keyParams;
-            asymmetricKeys = "NONE";
+        else if (method.contains("ECC ile Anahtar")) {
+            System.out.println(">>> Using ECC for key generation");
+            keyGenMethod = "ECC";
             
             if (method.contains("DES")) {
+                symmetricKey = eccKeyGen.generateSymmetricKey(8, keyParams.isEmpty() ? "auto" : keyParams);
+                System.out.println("Generated DES key with ECC: " + symmetricKey + " (length: " + symmetricKey.length() + ")");
+                
                 if (symmetricKey.length() != 8) {
                     throw new IllegalArgumentException("DES anahtarı tam 8 karakter olmalı!");
                 }
-                encryptedContent = des.encrypt(fileContent, symmetricKey);
+                
+                if (method.contains("Manuel")) {
+                    encryptedContent = des.encrypt(fileContent, symmetricKey);
+                } else {
+                    encryptedContent = desLib.encrypt(fileContent, symmetricKey);
+                }
                 
             } else if (method.contains("AES")) {
+                symmetricKey = eccKeyGen.generateSymmetricKey(16, keyParams.isEmpty() ? "auto" : keyParams);
+                System.out.println("Generated AES key with ECC: " + symmetricKey + " (length: " + symmetricKey.length() + ")");
+                
                 if (symmetricKey.length() != 16) {
                     throw new IllegalArgumentException("AES anahtarı tam 16 karakter olmalı!");
                 }
-                encryptedContent = aes.encrypt(fileContent, symmetricKey);
+                
+                if (method.contains("Manuel")) {
+                    encryptedContent = aes.encrypt(fileContent, symmetricKey);
+                } else {
+                    encryptedContent = aesLib.encrypt(fileContent, symmetricKey);
+                }
             } else {
-                throw new IllegalArgumentException("Geçersiz manuel mod!");
+                throw new IllegalArgumentException("ECC ile sadece DES/AES destekleniyor!");
             }
+            
+            asymmetricKeys = "ECC_GENERATED";
         }
         
         else {
@@ -166,7 +164,7 @@ public class FileEncryptionHandler {
         
         
         StringBuilder output = new StringBuilder();
-        output.append("ENCRYPTED_FILE_V2").append("|");  
+        output.append("ENCRYPTED_FILE_V2").append("|");
         output.append(method).append("|");
         output.append(keyGenMethod).append("|");
         output.append(asymmetricKeys).append("|");
@@ -193,7 +191,7 @@ public class FileEncryptionHandler {
         String encryptedData = new String(Files.readAllBytes(inputFile.toPath()), "UTF-8");
         System.out.println("Encrypted file size: " + encryptedData.length() + " characters");
         
-        
+    
         boolean isV2 = encryptedData.startsWith("ENCRYPTED_FILE_V2|");
         boolean isV1 = encryptedData.startsWith("ENCRYPTED_FILE_V1|");
         
@@ -231,7 +229,7 @@ public class FileEncryptionHandler {
             
             header = parts[0];
             method = parts[1];
-            keyGenMethod = "RSA"; 
+            keyGenMethod = "RSA";
             asymmetricKeys = parts[2];
             symmetricKey = parts[3];
             fileExtension = parts[4];
@@ -242,26 +240,54 @@ public class FileEncryptionHandler {
         
         System.out.println("Method: " + method);
         System.out.println("Extension: " + fileExtension);
-        System.out.println("Symmetric key: " + symmetricKey + " (length: " + symmetricKey.length() + ")");
+        System.out.println("Symmetric key length: " + symmetricKey.length());
         System.out.println("Encrypted content length: " + encryptedContent.length());
         
         String decryptedContent;
         
         
-        if (method.contains("DES")) {
-            if (method.contains("Manuel")) {
-                decryptedContent = des.decrypt(encryptedContent, symmetricKey);
-            } else {
-                decryptedContent = desLib.decrypt(encryptedContent, symmetricKey);
-            }
+        if (method.contains("Manuel")) {
+            System.out.println(">>> MANUAL DECRYPTION");
             
-        } else if (method.contains("AES")) {
-            if (method.contains("Manuel")) {
+            if (method.contains("DES")) {
+                if (symmetricKey.length() != 8) {
+                    throw new IllegalArgumentException("DES anahtarı 8 karakter olmalı! Bulunan: " + symmetricKey.length());
+                }
+                decryptedContent = des.decrypt(encryptedContent, symmetricKey);
+                
+            } else if (method.contains("AES")) {
+                if (symmetricKey.length() != 16) {
+                    throw new IllegalArgumentException("AES anahtarı 16 karakter olmalı! Bulunan: " + symmetricKey.length());
+                }
                 decryptedContent = aes.decrypt(encryptedContent, symmetricKey);
+                
             } else {
-                decryptedContent = aesLib.decrypt(encryptedContent, symmetricKey);
+                throw new IllegalArgumentException("Desteklenmeyen manuel yöntem: " + method);
             }
-        } else {
+        }
+        
+        
+        else if (method.contains("Kütüphane")) {
+            System.out.println(">>> LIBRARY DECRYPTION");
+            
+            if (method.contains("DES")) {
+                if (symmetricKey.length() != 8) {
+                    throw new IllegalArgumentException("DES anahtarı 8 karakter olmalı! Bulunan: " + symmetricKey.length());
+                }
+                decryptedContent = desLib.decrypt(encryptedContent, symmetricKey);
+                
+            } else if (method.contains("AES")) {
+                if (symmetricKey.length() != 16) {
+                    throw new IllegalArgumentException("AES anahtarı 16 karakter olmalı! Bulunan: " + symmetricKey.length());
+                }
+                decryptedContent = aesLib.decrypt(encryptedContent, symmetricKey);
+                
+            } else {
+                throw new IllegalArgumentException("Desteklenmeyen kütüphane yöntemi: " + method);
+            }
+        }
+        
+        else {
             throw new IllegalArgumentException("Desteklenmeyen deşifreleme yöntemi: " + method);
         }
         
@@ -287,7 +313,7 @@ public class FileEncryptionHandler {
         return new DecryptionInfo(method, symmetricKey, fileExtension, outputFile.getName(), fileBytes.length, keyGenMethod);
     }
     
-    
+   
     
     public static class EncryptionInfo {
         public String method;
@@ -295,7 +321,7 @@ public class FileEncryptionHandler {
         public String symmetricKey;
         public String fileExtension;
         public String originalFileName;
-        public String keyGenMethod; 
+        public String keyGenMethod;
         
         public EncryptionInfo(String method, String asymmetricKeys, String symmetricKey, 
                             String fileExtension, String originalFileName, String keyGenMethod) {

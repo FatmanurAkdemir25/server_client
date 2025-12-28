@@ -22,7 +22,7 @@ public class DESLibrary {
                 "Örnek geçerli anahtarlar: 'secret12', 'PASSWORD', '12345678'",
                 key, key == null ? 0 : key.length()
             );
-            System.err.println("❌ " + error);
+            System.err.println( error);
             throw new IllegalArgumentException(error);
         }
         
